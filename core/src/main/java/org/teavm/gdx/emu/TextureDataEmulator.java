@@ -13,7 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.teavm.libgdx.emu;
+
+package org.teavm.gdx.emu;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -21,15 +22,12 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.TextureData;
 import com.badlogic.gdx.graphics.glutils.FileTextureData;
 
-/**
- *
- * @author Alexey Andreev
- */
+/** @author Alexey Andreev */
 public class TextureDataEmulator {
-    public static TextureData loadFromFile(FileHandle file, Format format, boolean useMipMaps) {
-        if (file == null) {
-            return null;
-        }
-        return new FileTextureData(file, new Pixmap(file), format, useMipMaps);
-    }
+	public static TextureData loadFromFile (FileHandle file, Format format, boolean useMipMaps) {
+		if (file == null) {
+			return null;
+		}
+		return new FileTextureData(file, new Pixmap(file), format, useMipMaps);
+	}
 }

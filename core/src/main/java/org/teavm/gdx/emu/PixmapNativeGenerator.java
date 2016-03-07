@@ -13,7 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.teavm.libgdx.emu;
+
+package org.teavm.gdx.emu;
 
 import java.io.IOException;
 import org.teavm.codegen.SourceWriter;
@@ -21,16 +22,13 @@ import org.teavm.javascript.spi.Generator;
 import org.teavm.javascript.spi.GeneratorContext;
 import org.teavm.model.MethodReference;
 
-/**
- *
- * @author Alexey Andreev
- */
+/** @author Alexey Andreev */
 public class PixmapNativeGenerator implements Generator {
-    @Override
-    public void generate(GeneratorContext context, SourceWriter writer, MethodReference methodRef) throws IOException {
-        if (methodRef.getName().equals("bufferAsArray")) {
-            String param = context.getParameterName(1);
-            writer.append("return $rt_wrapArray($rt_bytecls(), new Int8Array(" + param +"));").softNewLine();
-        }
-    }
+	@Override
+	public void generate (GeneratorContext context, SourceWriter writer, MethodReference methodRef) throws IOException {
+		if (methodRef.getName().equals("bufferAsArray")) {
+			String param = context.getParameterName(1);
+			writer.append("return $rt_wrapArray($rt_bytecls(), new Int8Array(" + param + "));").softNewLine();
+		}
+	}
 }
