@@ -15,9 +15,6 @@
  */
 package org.teavm.libgdx;
 
-import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.GL30;
 import org.teavm.jso.browser.Screen;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.core.JSArrayReader;
@@ -26,34 +23,38 @@ import org.teavm.jso.dom.html.HTMLCanvasElement;
 import org.teavm.jso.webgl.WebGLContextAttributes;
 import org.teavm.jso.webgl.WebGLRenderingContext;
 
-/**
- *
- * @author Alexey Andreev
- */
+import com.badlogic.gdx.Graphics;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Cursor.SystemCursor;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.Pixmap;
+
+/** @author Alexey Andreev */
 public class TeaVMGraphics implements Graphics {
-    private HTMLCanvasElement element;
-    private TeaVMApplicationConfig config;
-    private WebGLRenderingContext context;
+    private final HTMLCanvasElement element;
+    private final TeaVMApplicationConfig config;
+    private final WebGLRenderingContext context;
     long frameId = -1;
     float deltaTime;
     long lastTimeStamp;
     long time;
     int frames;
     float fps;
-    private TeaVMGL20 gl20;
+    private final TeaVMGL20 gl20;
 
-    public TeaVMGraphics(HTMLCanvasElement element, TeaVMApplicationConfig config) {
+    public TeaVMGraphics(final HTMLCanvasElement element, final TeaVMApplicationConfig config) {
         this.element = element;
         this.config = config;
 
-        WebGLContextAttributes attr = WebGLContextAttributes.create();
+        final WebGLContextAttributes attr = WebGLContextAttributes.create();
         attr.setAlpha(config.isAlphaEnabled());
         attr.setAntialias(config.isAntialiasEnabled());
         attr.setStencil(config.isStencilEnabled());
         attr.setPremultipliedAlpha(config.isPremultipliedAlpha());
         attr.setPreserveDrawingBuffer(config.isDrawingBufferPreserved());
 
-        context = (WebGLRenderingContext)element.getContext("webgl");
+        context = (WebGLRenderingContext) element.getContext("webgl");
         context.viewport(0, 0, element.getWidth(), element.getHeight());
         gl20 = new TeaVMGL20(context);
     }
@@ -100,7 +101,7 @@ public class TeaVMGraphics implements Graphics {
 
     @Override
     public int getFramesPerSecond() {
-        return (int)fps;
+        return (int) fps;
     }
 
     @Override
@@ -140,31 +141,17 @@ public class TeaVMGraphics implements Graphics {
 
     @Override
     public DisplayMode[] getDisplayModes() {
-        Screen screen = Window.current().getScreen();
-        return new DisplayMode[] { new DisplayMode(screen.getWidth(), screen.getHeight(), 60, 8) {}};
+        final Screen screen = Window.current().getScreen();
+        return new DisplayMode[] { new DisplayMode(screen.getWidth(), screen.getHeight(), 60, 8) {
+        } };
     }
 
     @Override
-    public DisplayMode getDesktopDisplayMode() {
-        return getDisplayModes()[0];
+    public void setTitle(final String title) {
     }
 
     @Override
-    public boolean setDisplayMode(DisplayMode displayMode) {
-        return false;
-    }
-
-    @Override
-    public boolean setDisplayMode(int width, int height, boolean fullscreen) {
-        return false;
-    }
-
-    @Override
-    public void setTitle(String title) {
-    }
-
-    @Override
-    public void setVSync(boolean vsync) {
+    public void setVSync(final boolean vsync) {
     }
 
     @Override
@@ -173,8 +160,8 @@ public class TeaVMGraphics implements Graphics {
     }
 
     @Override
-    public boolean supportsExtension(String extension) {
-        JSArrayReader<JSString> array = context.getSupportedExtensions();
+    public boolean supportsExtension(final String extension) {
+        final JSArrayReader<JSString> array = context.getSupportedExtensions();
         for (int i = 0; i < array.getLength(); ++i) {
             if (array.get(i).stringValue().equals(extension)) {
                 return true;
@@ -184,7 +171,7 @@ public class TeaVMGraphics implements Graphics {
     }
 
     @Override
-    public void setContinuousRendering(boolean isContinuous) {
+    public void setContinuousRendering(final boolean isContinuous) {
     }
 
     @Override
@@ -201,16 +188,79 @@ public class TeaVMGraphics implements Graphics {
         return false;
     }
 
-    public void update () {
-        long currTimeStamp = System.currentTimeMillis();
+    public void update() {
+        final long currTimeStamp = System.currentTimeMillis();
         deltaTime = (currTimeStamp - lastTimeStamp) / 1000.0f;
         lastTimeStamp = currTimeStamp;
         time += deltaTime;
         frames++;
         if (time > 1) {
-            this.fps = frames;
+            fps = frames;
             time = 0;
             frames = 0;
         }
+    }
+
+    @Override
+    public int getBackBufferWidth() {
+        return 0;
+    }
+
+    @Override
+    public int getBackBufferHeight() {
+        return 0;
+    }
+
+    @Override
+    public Monitor getPrimaryMonitor() {
+        return null;
+    }
+
+    @Override
+    public Monitor getMonitor() {
+        return null;
+    }
+
+    @Override
+    public Monitor[] getMonitors() {
+        return null;
+    }
+
+    @Override
+    public DisplayMode[] getDisplayModes(final Monitor monitor) {
+        return null;
+    }
+
+    @Override
+    public DisplayMode getDisplayMode() {
+        return null;
+    }
+
+    @Override
+    public DisplayMode getDisplayMode(final Monitor monitor) {
+        return null;
+    }
+
+    @Override
+    public boolean setFullscreenMode(final DisplayMode displayMode) {
+        return false;
+    }
+
+    @Override
+    public boolean setWindowedMode(final int width, final int height) {
+        return false;
+    }
+
+    @Override
+    public Cursor newCursor(final Pixmap pixmap, final int xHotspot, final int yHotspot) {
+        return null;
+    }
+
+    @Override
+    public void setCursor(final Cursor cursor) {
+    }
+
+    @Override
+    public void setSystemCursor(final SystemCursor systemCursor) {
     }
 }

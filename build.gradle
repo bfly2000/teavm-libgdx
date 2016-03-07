@@ -1,0 +1,8 @@
+apply plugin: "eclipse"
+apply plugin: "idea"
+
+tasks.eclipse.doLast {
+  delete ".project"
+  delete ".classpath"
+  delete ".settings/"
+}

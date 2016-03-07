@@ -1,0 +1,121 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+sourceCompatibility = 1.8
+
+ext {
+  teaVersion = '0.4.3'
+  gdxVersion = '1.9.2'
+  jacksonVersion = '2.5.0'
+  isSnapshot = '-SNAPSHOT'
+}
+
+group = projectGroupId
+archivesBaseName = "gdx-backend-teavm"
+version = "$gdxVersion$isSnapshot"
+
+configurations {
+  deployerJars
+}
+
+repositories {
+  jcenter()
+  mavenLocal()
+  mavenCentral()
+  maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
+jar {
+  from project.sourceSets.main.allSource
+  from project.sourceSets.main.output
+  baseName = "$archivesBaseName"
+}
+
+javadoc {
+  options.addStringOption("sourcepath", "")
+}
+
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives javadocJar, sourcesJar
+}
+
+signing {
+  sign configurations.archives
+}
+
+dependencies {
+  compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+  compile "org.teavm:teavm-classlib:$teaVersion"
+  compile "org.teavm:teavm-jso:$teaVersion"
+  compile "org.teavm:teavm-jso-apis:$teaVersion"
+  compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+  compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
+  compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+
+  deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+  deployerJars "org.apache.maven.wagon:wagon-http:2.2"
+}
+
+eclipse.project.name = "$archivesBaseName"
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'Gdx Backend TeaVM'
+        packaging 'jar'
+        description 'TeaVM backend for LibGDX applications.'
+        url 'http://github.com/konsoletyper/teavm-libgdx'
+
+        licenses {
+          license {
+            name 'The Apache License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+        
+        scm {
+          connection 'scm:git:git@github.com:konsoletyper/teavm-libgdx.git'
+          developerConnection 'scm:git:git@github.com:konsoletyper/teavm-libgdx.git'
+          url 'http://github.com/konsoletyper/teavm-libgdx/'
+        }
+
+        developers {
+          developer {
+            id 'aa'
+            name 'Alexey Andreev'
+            email 'konsoletyper@gmail.com'
+          }
+          developer {
+            id 'mj'
+            name 'MJ'
+            email 'john.hervicc@gmail.com'
+          }
+        }
+      }
+    }
+  }
+}

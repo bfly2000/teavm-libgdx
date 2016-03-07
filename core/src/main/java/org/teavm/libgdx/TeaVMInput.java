@@ -1,11 +1,5 @@
 package org.teavm.libgdx;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.IntSet;
 import org.teavm.jso.dom.events.Event;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.events.KeyboardEvent;
@@ -13,19 +7,22 @@ import org.teavm.jso.dom.events.MouseEvent;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
 import org.teavm.jso.dom.html.HTMLDocument;
 
-/**
- *
- * @author Alexey Andreev
- */
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.IntSet;
+
+/** @author Alexey Andreev */
 public class TeaVMInput implements Input, EventListener<Event> {
     static final int MAX_TOUCHES = 20;
     boolean justTouched = false;
-    private IntMap<Integer> touchMap = new IntMap<>(20);
-    private boolean[] touched = new boolean[MAX_TOUCHES];
-    private int[] touchX = new int[MAX_TOUCHES];
-    private int[] touchY = new int[MAX_TOUCHES];
-    private int[] deltaX = new int[MAX_TOUCHES];
-    private int[] deltaY = new int[MAX_TOUCHES];
+    private final IntMap<Integer> touchMap = new IntMap<>(20);
+    private final boolean[] touched = new boolean[MAX_TOUCHES];
+    private final int[] touchX = new int[MAX_TOUCHES];
+    private final int[] touchY = new int[MAX_TOUCHES];
+    private final int[] deltaX = new int[MAX_TOUCHES];
+    private final int[] deltaY = new int[MAX_TOUCHES];
     IntSet pressedButtons = new IntSet();
     int pressedKeyCount = 0;
     boolean[] pressedKeys = new boolean[256];
@@ -38,7 +35,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     final HTMLCanvasElement canvas;
     boolean hasFocus = true;
 
-    public TeaVMInput(HTMLCanvasElement canvas) {
+    public TeaVMInput(final HTMLCanvasElement canvas) {
         this.canvas = canvas;
         hookEvents();
     }
@@ -74,7 +71,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public int getX(int pointer) {
+    public int getX(final int pointer) {
         return touchX[pointer];
     }
 
@@ -84,7 +81,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public int getDeltaX(int pointer) {
+    public int getDeltaX(final int pointer) {
         return deltaX[pointer];
     }
 
@@ -94,7 +91,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public int getY(int pointer) {
+    public int getY(final int pointer) {
         return touchY[pointer];
     }
 
@@ -104,7 +101,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public int getDeltaY(int pointer) {
+    public int getDeltaY(final int pointer) {
         return deltaY[pointer];
     }
 
@@ -124,17 +121,17 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public boolean isTouched(int pointer) {
+    public boolean isTouched(final int pointer) {
         return touched[pointer];
     }
 
     @Override
-    public boolean isButtonPressed(int button) {
+    public boolean isButtonPressed(final int button) {
         return button == Buttons.LEFT && touched[0];
     }
 
     @Override
-    public boolean isKeyPressed(int key) {
+    public boolean isKeyPressed(final int key) {
         if (key == Keys.ANY_KEY) {
             return pressedKeyCount > 0;
         }
@@ -145,7 +142,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public boolean isKeyJustPressed(int key) {
+    public boolean isKeyJustPressed(final int key) {
         if (key == Keys.ANY_KEY) {
             return keyJustPressed;
         }
@@ -155,36 +152,24 @@ public class TeaVMInput implements Input, EventListener<Event> {
         return justPressedKeys[key];
     }
 
-    /*public void getTextInput(TextInputListener listener, String title, String text, String hint) {
-        TextInputDialogBox dialog = new TextInputDialogBox(title, text, hint);
-        final TextInputListener capturedListener = listener;
-        dialog.setListener(new TextInputDialogListener() {
-            @Override
-            public void onPositive(String text) {
-                if (capturedListener != null) {
-                    capturedListener.input(text);
-                }
-            }
-
-            @Override
-            public void onNegative() {
-                if (capturedListener != null) {
-                    capturedListener.canceled();
-                }
-            }
-        });
-    }*/
+    /* public void getTextInput(TextInputListener listener, String title, String text, String hint) { TextInputDialogBox
+     * dialog = new TextInputDialogBox(title, text, hint); final TextInputListener capturedListener = listener;
+     * dialog.setListener(new TextInputDialogListener() {
+     *
+     * @Override public void onPositive(String text) { if (capturedListener != null) { capturedListener.input(text); } }
+     *
+     * @Override public void onNegative() { if (capturedListener != null) { capturedListener.canceled(); } } }); } */
 
     @Override
-    public void setOnscreenKeyboardVisible(boolean visible) {
+    public void setOnscreenKeyboardVisible(final boolean visible) {
     }
 
     @Override
-    public void vibrate(int milliseconds) {
+    public void vibrate(final int milliseconds) {
     }
 
     @Override
-    public void vibrate(long[] pattern, int repeat) {
+    public void vibrate(final long[] pattern, final int repeat) {
     }
 
     @Override
@@ -207,7 +192,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public void getRotationMatrix(float[] matrix) {
+    public void getRotationMatrix(final float[] matrix) {
     }
 
     @Override
@@ -216,7 +201,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public void setCatchBackKey(boolean catchBack) {
+    public void setCatchBackKey(final boolean catchBack) {
     }
 
     @Override
@@ -225,11 +210,11 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public void setCatchMenuKey(boolean catchMenu) {
+    public void setCatchMenuKey(final boolean catchMenu) {
     }
 
     @Override
-    public void setInputProcessor(InputProcessor processor) {
+    public void setInputProcessor(final InputProcessor processor) {
         this.processor = processor;
     }
 
@@ -239,7 +224,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public boolean isPeripheralAvailable(Peripheral peripheral) {
+    public boolean isPeripheralAvailable(final Peripheral peripheral) {
         switch (peripheral) {
             case Accelerometer:
             case Compass:
@@ -264,12 +249,12 @@ public class TeaVMInput implements Input, EventListener<Event> {
         return Orientation.Landscape;
     }
 
-    private  boolean isCursorCatchedJSNI() {
+    private boolean isCursorCatchedJSNI() {
         // TODO: implement
         return false;
     }
 
-    private void setCursorCatchedJSNI(HTMLCanvasElement element) {
+    private void setCursorCatchedJSNI(final HTMLCanvasElement element) {
         // TODO: implement
     }
 
@@ -277,12 +262,12 @@ public class TeaVMInput implements Input, EventListener<Event> {
         // TODO: implement
     }
 
-    private float getMovementXJSNI(Event event) {
+    private float getMovementXJSNI(final Event event) {
         // TODO: implement
         return 0;
     }
 
-    private float getMovementYJSNI(Event event) {
+    private float getMovementYJSNI(final Event event) {
         // TODO: implement
         return 0;
     }
@@ -292,12 +277,10 @@ public class TeaVMInput implements Input, EventListener<Event> {
         return false;
     }
 
-    /**
-     * works only for Chrome > Version 18 with enabled Mouse Lock enable in
-     * about:flags or start Chrome with the --enable-pointer-lock flag
-     */
+    /** works only for Chrome > Version 18 with enabled Mouse Lock enable in about:flags or start Chrome with the
+     * --enable-pointer-lock flag */
     @Override
-    public void setCursorCatched(boolean catched) {
+    public void setCursorCatched(final boolean catched) {
         if (catched) {
             setCursorCatchedJSNI(canvas);
         } else {
@@ -311,11 +294,11 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public void setCursorPosition(int x, int y) {
+    public void setCursorPosition(final int x, final int y) {
         // FIXME??
     }
 
-    private static float getMouseWheelVelocity(Event evt) {
+    private static float getMouseWheelVelocity(final Event evt) {
         // TODO: implement
         return 0;
     }
@@ -326,41 +309,28 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     /** Kindly borrowed from PlayN. **/
-    protected int getRelativeX(MouseEvent e, HTMLCanvasElement target) {
-        float xScaleRatio = target.getWidth() * 1f / target.getClientWidth();
-        return Math.round(xScaleRatio *
-                (e.getClientX() - target.getAbsoluteLeft() + target.getScrollLeft() + target.getOwnerDocument()
-                        .getScrollLeft()));
+    protected int getRelativeX(final MouseEvent e, final HTMLCanvasElement target) {
+        final float xScaleRatio = target.getWidth() * 1f / target.getClientWidth();
+        return Math.round(xScaleRatio * (e.getClientX() - target.getAbsoluteLeft() + target.getScrollLeft()
+                + target.getOwnerDocument().getScrollLeft()));
     }
 
     /** Kindly borrowed from PlayN. **/
-    protected int getRelativeY(MouseEvent e, HTMLCanvasElement target) {
-        float yScaleRatio = target.getHeight() * 1f / target.getClientHeight();
-        return Math.round(yScaleRatio *
-                (e.getClientY() - target.getAbsoluteTop() + target.getScrollTop() + target.getOwnerDocument()
-                        .getScrollTop()));
-    }
-/*
-    protected int getRelativeX(Touch touch, HTMLCanvasElement target) {
-        float xScaleRatio = target.getWidth() * 1f / target.getClientWidth(); // Correct
-                                                                              // for
-                                                                              // canvas
-                                                                              // CSS
-                                                                              // scaling
-        return Math.round(xScaleRatio * touch.getRelativeX(target));
+    protected int getRelativeY(final MouseEvent e, final HTMLCanvasElement target) {
+        final float yScaleRatio = target.getHeight() * 1f / target.getClientHeight();
+        return Math.round(yScaleRatio * (e.getClientY() - target.getAbsoluteTop() + target.getScrollTop()
+                + target.getOwnerDocument().getScrollTop()));
     }
 
-    protected int getRelativeY(Touch touch, CanvasElement target) {
-        float yScaleRatio = target.getHeight() * 1f / target.getClientHeight(); // Correct
-                                                                                // for
-                                                                                // canvas
-                                                                                // CSS
-                                                                                // scaling
-        return Math.round(yScaleRatio * touch.getRelativeY(target));
-    }
-*/
+    /* protected int getRelativeX(Touch touch, HTMLCanvasElement target) { float xScaleRatio = target.getWidth() * 1f /
+     * target.getClientWidth(); // Correct // for // canvas // CSS // scaling return Math.round(xScaleRatio *
+     * touch.getRelativeX(target)); }
+     *
+     * protected int getRelativeY(Touch touch, CanvasElement target) { float yScaleRatio = target.getHeight() * 1f /
+     * target.getClientHeight(); // Correct // for // canvas // CSS // scaling return Math.round(yScaleRatio *
+     * touch.getRelativeY(target)); } */
     private void hookEvents() {
-        HTMLDocument document = canvas.getOwnerDocument();
+        final HTMLDocument document = canvas.getOwnerDocument();
         canvas.addEventListener("mousedown", this, true);
         document.addEventListener("mousedown", this, true);
         canvas.addEventListener("mouseup", this, true);
@@ -379,7 +349,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
 
     }
 
-    private int getButton(int button) {
+    private int getButton(final int button) {
         if (button == MouseEvent.LEFT_BUTTON) {
             return Buttons.LEFT;
         }
@@ -393,30 +363,30 @@ public class TeaVMInput implements Input, EventListener<Event> {
     }
 
     @Override
-    public void handleEvent(Event e) {
+    public void handleEvent(final Event e) {
         if (e.getType().equals("mousedown")) {
-            MouseEvent mouseEvent = (MouseEvent)e;
+            final MouseEvent mouseEvent = (MouseEvent) e;
             if (e.getTarget() != canvas || touched[0]) {
-                float mouseX = getRelativeX(mouseEvent, canvas);
-                float mouseY = getRelativeY(mouseEvent, canvas);
-                if (mouseX < 0 || mouseX > Gdx.graphics.getWidth() || mouseY < 0 ||mouseY > Gdx.graphics.getHeight()) {
+                final float mouseX = getRelativeX(mouseEvent, canvas);
+                final float mouseY = getRelativeY(mouseEvent, canvas);
+                if (mouseX < 0 || mouseX > Gdx.graphics.getWidth() || mouseY < 0 || mouseY > Gdx.graphics.getHeight()) {
 
                     hasFocus = false;
                 }
                 return;
             }
             hasFocus = true;
-            this.justTouched = true;
-            this.touched[0] = true;
-            this.pressedButtons.add(getButton(mouseEvent.getButton()));
-            this.deltaX[0] = 0;
-            this.deltaY[0] = 0;
+            justTouched = true;
+            touched[0] = true;
+            pressedButtons.add(getButton(mouseEvent.getButton()));
+            deltaX[0] = 0;
+            deltaY[0] = 0;
             if (isCursorCatched()) {
-                this.touchX[0] += getMovementXJSNI(e);
-                this.touchY[0] += getMovementYJSNI(e);
+                touchX[0] += getMovementXJSNI(e);
+                touchY[0] += getMovementYJSNI(e);
             } else {
-                this.touchX[0] = getRelativeX(mouseEvent, canvas);
-                this.touchY[0] = getRelativeY(mouseEvent, canvas);
+                touchX[0] = getRelativeX(mouseEvent, canvas);
+                touchY[0] = getRelativeY(mouseEvent, canvas);
             }
             if (processor != null) {
                 processor.touchDown(touchX[0], touchY[0], 0, getButton(mouseEvent.getButton()));
@@ -424,17 +394,17 @@ public class TeaVMInput implements Input, EventListener<Event> {
         }
 
         if (e.getType().equals("mousemove")) {
-            MouseEvent mouseEvent = (MouseEvent)e;
+            final MouseEvent mouseEvent = (MouseEvent) e;
             if (isCursorCatched()) {
-                this.deltaX[0] = (int)getMovementXJSNI(e);
-                this.deltaY[0] = (int)getMovementYJSNI(e);
-                this.touchX[0] += getMovementXJSNI(e);
-                this.touchY[0] += getMovementYJSNI(e);
+                deltaX[0] = (int) getMovementXJSNI(e);
+                deltaY[0] = (int) getMovementYJSNI(e);
+                touchX[0] += getMovementXJSNI(e);
+                touchY[0] += getMovementYJSNI(e);
             } else {
-                this.deltaX[0] = getRelativeX(mouseEvent, canvas) - touchX[0];
-                this.deltaY[0] = getRelativeY(mouseEvent, canvas) - touchY[0];
-                this.touchX[0] = getRelativeX(mouseEvent, canvas);
-                this.touchY[0] = getRelativeY(mouseEvent, canvas);
+                deltaX[0] = getRelativeX(mouseEvent, canvas) - touchX[0];
+                deltaY[0] = getRelativeY(mouseEvent, canvas) - touchY[0];
+                touchX[0] = getRelativeX(mouseEvent, canvas);
+                touchY[0] = getRelativeY(mouseEvent, canvas);
             }
             if (processor != null) {
                 if (touched[0]) {
@@ -449,33 +419,34 @@ public class TeaVMInput implements Input, EventListener<Event> {
             if (!touched[0]) {
                 return;
             }
-            MouseEvent mouseEvent = (MouseEvent)e;
-            this.pressedButtons.remove(getButton(mouseEvent.getButton()));
-            this.touched[0] = pressedButtons.size > 0;
+            final MouseEvent mouseEvent = (MouseEvent) e;
+            pressedButtons.remove(getButton(mouseEvent.getButton()));
+            touched[0] = pressedButtons.size > 0;
             if (isCursorCatched()) {
-                this.deltaX[0] = (int)getMovementXJSNI(e);
-                this.deltaY[0] = (int)getMovementYJSNI(e);
-                this.touchX[0] += getMovementXJSNI(e);
-                this.touchY[0] += getMovementYJSNI(e);
+                deltaX[0] = (int) getMovementXJSNI(e);
+                deltaY[0] = (int) getMovementYJSNI(e);
+                touchX[0] += getMovementXJSNI(e);
+                touchY[0] += getMovementYJSNI(e);
             } else {
-                this.deltaX[0] = getRelativeX(mouseEvent, canvas) - touchX[0];
-                this.deltaY[0] = getRelativeY(mouseEvent, canvas) - touchY[0];
-                this.touchX[0] = getRelativeX(mouseEvent, canvas);
-                this.touchY[0] = getRelativeY(mouseEvent, canvas);
+                deltaX[0] = getRelativeX(mouseEvent, canvas) - touchX[0];
+                deltaY[0] = getRelativeY(mouseEvent, canvas) - touchY[0];
+                touchX[0] = getRelativeX(mouseEvent, canvas);
+                touchY[0] = getRelativeY(mouseEvent, canvas);
             }
-            this.touched[0] = false;
-            if (processor != null)
+            touched[0] = false;
+            if (processor != null) {
                 processor.touchUp(touchX[0], touchY[0], 0, getButton(mouseEvent.getButton()));
+            }
         }
         if (e.getType().equals(getMouseWheelEvent())) {
             if (processor != null) {
-                processor.scrolled((int)getMouseWheelVelocity(e));
+                processor.scrolled((int) getMouseWheelVelocity(e));
             }
             e.preventDefault();
         }
         if (e.getType().equals("keydown") && hasFocus) {
-            KeyboardEvent keyEvent = (KeyboardEvent)e;
-            int code = keyForCode(keyEvent.getKeyCode());
+            final KeyboardEvent keyEvent = (KeyboardEvent) e;
+            final int code = keyForCode(keyEvent.getKeyCode());
             if (code == 67) {
                 e.preventDefault();
                 if (processor != null) {
@@ -496,8 +467,8 @@ public class TeaVMInput implements Input, EventListener<Event> {
         }
 
         if (e.getType().equals("keypress") && hasFocus) {
-            KeyboardEvent keyEvent = (KeyboardEvent)e;
-            char c = (char)keyEvent.getCharCode();
+            final KeyboardEvent keyEvent = (KeyboardEvent) e;
+            final char c = (char) keyEvent.getCharCode();
             if (processor != null) {
                 processor.keyTyped(c);
             }
@@ -505,8 +476,8 @@ public class TeaVMInput implements Input, EventListener<Event> {
 
         if (e.getType().equals("keyup") && hasFocus) {
             // System.out.println("keyup");
-            KeyboardEvent keyEvent = (KeyboardEvent)e;
-            int code = keyForCode(keyEvent.getKeyCode());
+            final KeyboardEvent keyEvent = (KeyboardEvent) e;
+            final int code = keyForCode(keyEvent.getKeyCode());
             if (pressedKeys[code]) {
                 pressedKeyCount--;
                 pressedKeys[code] = false;
@@ -516,94 +487,46 @@ public class TeaVMInput implements Input, EventListener<Event> {
             }
         }
 
-        /*if (e.getType().equals("touchstart")) {
-            this.justTouched = true;
-            JSArrayReader<Touch> touches = e.getChangedTouches();
-            for (int i = 0, j = touches.length(); i < j; i++) {
-                Touch touch = touches.get(i);
-                int real = touch.getIdentifier();
-                int touchId;
-                touchMap.put(real, touchId = getAvailablePointer());
-                touched[touchId] = true;
-                touchX[touchId] = getRelativeX(touch, canvas);
-                touchY[touchId] = getRelativeY(touch, canvas);
-                deltaX[touchId] = 0;
-                deltaY[touchId] = 0;
-                if (processor != null) {
-                    processor.touchDown(touchX[touchId], touchY[touchId], touchId, Buttons.LEFT);
-                }
-            }
-            this.currentEventTimeStamp = TimeUtils.nanoTime();
-            e.preventDefault();
-        }
-        if (e.getType().equals("touchmove")) {
-            JsArray<Touch> touches = e.getChangedTouches();
-            for (int i = 0, j = touches.length(); i < j; i++) {
-                Touch touch = touches.get(i);
-                int real = touch.getIdentifier();
-                int touchId = touchMap.get(real);
-                deltaX[touchId] = getRelativeX(touch, canvas) - touchX[touchId];
-                deltaY[touchId] = getRelativeY(touch, canvas) - touchY[touchId];
-                touchX[touchId] = getRelativeX(touch, canvas);
-                touchY[touchId] = getRelativeY(touch, canvas);
-                if (processor != null) {
-                    processor.touchDragged(touchX[touchId], touchY[touchId], touchId);
-                }
-            }
-            this.currentEventTimeStamp = TimeUtils.nanoTime();
-            e.preventDefault();
-        }
-        if (e.getType().equals("touchcancel")) {
-            JsArray<Touch> touches = e.getChangedTouches();
-            for (int i = 0, j = touches.length(); i < j; i++) {
-                Touch touch = touches.get(i);
-                int real = touch.getIdentifier();
-                int touchId = touchMap.get(real);
-                touchMap.remove(real);
-                touched[touchId] = false;
-                deltaX[touchId] = getRelativeX(touch, canvas) - touchX[touchId];
-                deltaY[touchId] = getRelativeY(touch, canvas) - touchY[touchId];
-                touchX[touchId] = getRelativeX(touch, canvas);
-                touchY[touchId] = getRelativeY(touch, canvas);
-                if (processor != null) {
-                    processor.touchUp(touchX[touchId], touchY[touchId], touchId, Buttons.LEFT);
-                }
-            }
-            this.currentEventTimeStamp = TimeUtils.nanoTime();
-            e.preventDefault();
-        }
-        if (e.getType().equals("touchend")) {
-            JsArray<Touch> touches = e.getChangedTouches();
-            for (int i = 0, j = touches.length(); i < j; i++) {
-                Touch touch = touches.get(i);
-                int real = touch.getIdentifier();
-                int touchId = touchMap.get(real);
-                touchMap.remove(real);
-                touched[touchId] = false;
-                deltaX[touchId] = getRelativeX(touch, canvas) - touchX[touchId];
-                deltaY[touchId] = getRelativeY(touch, canvas) - touchY[touchId];
-                touchX[touchId] = getRelativeX(touch, canvas);
-                touchY[touchId] = getRelativeY(touch, canvas);
-                if (processor != null) {
-                    processor.touchUp(touchX[touchId], touchY[touchId], touchId, Buttons.LEFT);
-                }
-            }
-            this.currentEventTimeStamp = TimeUtils.nanoTime();
-            e.preventDefault();
-        }*/
+        /* if (e.getType().equals("touchstart")) { this.justTouched = true; JSArrayReader<Touch> touches =
+         * e.getChangedTouches(); for (int i = 0, j = touches.length(); i < j; i++) { Touch touch = touches.get(i); int
+         * real = touch.getIdentifier(); int touchId; touchMap.put(real, touchId = getAvailablePointer());
+         * touched[touchId] = true; touchX[touchId] = getRelativeX(touch, canvas); touchY[touchId] = getRelativeY(touch,
+         * canvas); deltaX[touchId] = 0; deltaY[touchId] = 0; if (processor != null) {
+         * processor.touchDown(touchX[touchId], touchY[touchId], touchId, Buttons.LEFT); } } this.currentEventTimeStamp
+         * = TimeUtils.nanoTime(); e.preventDefault(); } if (e.getType().equals("touchmove")) { JsArray<Touch> touches =
+         * e.getChangedTouches(); for (int i = 0, j = touches.length(); i < j; i++) { Touch touch = touches.get(i); int
+         * real = touch.getIdentifier(); int touchId = touchMap.get(real); deltaX[touchId] = getRelativeX(touch, canvas)
+         * - touchX[touchId]; deltaY[touchId] = getRelativeY(touch, canvas) - touchY[touchId]; touchX[touchId] =
+         * getRelativeX(touch, canvas); touchY[touchId] = getRelativeY(touch, canvas); if (processor != null) {
+         * processor.touchDragged(touchX[touchId], touchY[touchId], touchId); } } this.currentEventTimeStamp =
+         * TimeUtils.nanoTime(); e.preventDefault(); } if (e.getType().equals("touchcancel")) { JsArray<Touch> touches =
+         * e.getChangedTouches(); for (int i = 0, j = touches.length(); i < j; i++) { Touch touch = touches.get(i); int
+         * real = touch.getIdentifier(); int touchId = touchMap.get(real); touchMap.remove(real); touched[touchId] =
+         * false; deltaX[touchId] = getRelativeX(touch, canvas) - touchX[touchId]; deltaY[touchId] = getRelativeY(touch,
+         * canvas) - touchY[touchId]; touchX[touchId] = getRelativeX(touch, canvas); touchY[touchId] =
+         * getRelativeY(touch, canvas); if (processor != null) { processor.touchUp(touchX[touchId], touchY[touchId],
+         * touchId, Buttons.LEFT); } } this.currentEventTimeStamp = TimeUtils.nanoTime(); e.preventDefault(); } if
+         * (e.getType().equals("touchend")) { JsArray<Touch> touches = e.getChangedTouches(); for (int i = 0, j =
+         * touches.length(); i < j; i++) { Touch touch = touches.get(i); int real = touch.getIdentifier(); int touchId =
+         * touchMap.get(real); touchMap.remove(real); touched[touchId] = false; deltaX[touchId] = getRelativeX(touch,
+         * canvas) - touchX[touchId]; deltaY[touchId] = getRelativeY(touch, canvas) - touchY[touchId]; touchX[touchId] =
+         * getRelativeX(touch, canvas); touchY[touchId] = getRelativeY(touch, canvas); if (processor != null) {
+         * processor.touchUp(touchX[touchId], touchY[touchId], touchId, Buttons.LEFT); } } this.currentEventTimeStamp =
+         * TimeUtils.nanoTime(); e.preventDefault(); } */
         // if(hasFocus) e.preventDefault();
     }
 
     private int getAvailablePointer() {
         for (int i = 0; i < MAX_TOUCHES; i++) {
-            if (!touchMap.containsValue(i, false))
+            if (!touchMap.containsValue(i, false)) {
                 return i;
+            }
         }
         return -1;
     }
 
     /** borrowed from PlayN, thanks guys **/
-    private static int keyForCode(int keyCode) {
+    private static int keyForCode(final int keyCode) {
         switch (keyCode) {
             case KeyCodes.KEY_ALT:
                 return Keys.ALT_LEFT;
@@ -722,7 +645,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
                 return Keys.UNKNOWN; // FIXME
             case KEY_RIGHT_WINDOW_KEY:
                 return Keys.UNKNOWN; // FIXME
-                // case KEY_SELECT_KEY: return Keys.SELECT_KEY;
+            // case KEY_SELECT_KEY: return Keys.SELECT_KEY;
             case KEY_NUMPAD0:
                 return Keys.NUMPAD_0;
             case KEY_NUMPAD1:
@@ -894,10 +817,27 @@ public class TeaVMInput implements Input, EventListener<Event> {
     private static final int KEY_SINGLE_QUOTE = 222;
 
     @Override
-    public void setCursorImage(Pixmap pixmap, int xHotspot, int yHotspot) {
+    public void getTextInput(final TextInputListener listener, final String title, final String text,
+            final String hint) {
     }
 
     @Override
-    public void getTextInput(TextInputListener listener, String title, String text, String hint) {
+    public float getGyroscopeX() {
+        return 0;
+    }
+
+    @Override
+    public float getGyroscopeY() {
+        return 0;
+    }
+
+    @Override
+    public float getGyroscopeZ() {
+        return 0;
+    }
+
+    @Override
+    public boolean isCatchMenuKey() {
+        return false;
     }
 }

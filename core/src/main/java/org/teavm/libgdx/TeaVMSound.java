@@ -1,22 +1,22 @@
 package org.teavm.libgdx;
 
-import com.badlogic.gdx.audio.Sound;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *
- * @author Alexey Andreev
- */
-public class TeaVMSound implements Sound {
-    private TeaVMFileHandle file;
-    private Map<Long, TeaVMMusic> instances = new HashMap<>();
-    private long nextId;
-    private float volume = 1;
-    private float pitch = 1;
-    private float pan = 0.5f;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Music.OnCompletionListener;
+import com.badlogic.gdx.audio.Sound;
 
-    public TeaVMSound(TeaVMFileHandle file) {
+/** @author Alexey Andreev */
+public class TeaVMSound implements Sound {
+    private final TeaVMFileHandle file;
+    private final Map<Long, TeaVMMusic> instances = new HashMap<>();
+    private long nextId;
+    private final float volume = 1;
+    private final float pitch = 1;
+    private final float pan = 0.5f;
+
+    public TeaVMSound(final TeaVMFileHandle file) {
         this.file = file;
     }
 
@@ -26,12 +26,12 @@ public class TeaVMSound implements Sound {
     }
 
     @Override
-    public long play(float volume) {
+    public long play(final float volume) {
         return play(volume, pitch, pan);
     }
 
     @Override
-    public long play(float volume, float pitch, float pan) {
+    public long play(final float volume, final float pitch, final float pan) {
         return play(volume, pitch, pan, false);
     }
 
@@ -41,24 +41,27 @@ public class TeaVMSound implements Sound {
     }
 
     @Override
-    public long loop(float volume) {
+    public long loop(final float volume) {
         return loop(volume, pitch, pan);
     }
 
     @Override
-    public long loop(float volume, float pitch, float pan) {
+    public long loop(final float volume, final float pitch, final float pan) {
         return play(volume, pitch, pan, true);
     }
 
-    private long play(float volume, float pitch, float pan, boolean loop) {
+    private long play(final float volume, final float pitch, final float pan, final boolean loop) {
         final long id = nextId++;
         final TeaVMMusic instance = new TeaVMMusic(file);
         instance.setVolume(volume);
         instance.setPan(pan, volume);
         instance.setLooping(loop);
-        instance.setOnCompletionListener(music -> {
-            instances.remove(id);
-            instance.dispose();
+        instance.setOnCompletionListener(new OnCompletionListener() {
+            @Override
+            public void onCompletion(final Music music) {
+                instances.remove(id);
+                instance.dispose();
+            }
         });
         instances.put(id, instance);
         instance.play();
@@ -67,7 +70,7 @@ public class TeaVMSound implements Sound {
 
     @Override
     public void stop() {
-        for (TeaVMMusic music : instances.values()) {
+        for (final TeaVMMusic music : instances.values()) {
             music.dispose();
         }
         instances.clear();
@@ -75,14 +78,14 @@ public class TeaVMSound implements Sound {
 
     @Override
     public void pause() {
-        for (TeaVMMusic music : instances.values()) {
+        for (final TeaVMMusic music : instances.values()) {
             music.pause();
         }
     }
 
     @Override
     public void resume() {
-        for (TeaVMMusic music : instances.values()) {
+        for (final TeaVMMusic music : instances.values()) {
             music.play();
         }
     }
@@ -93,58 +96,54 @@ public class TeaVMSound implements Sound {
     }
 
     @Override
-    public void stop(long soundId) {
-        TeaVMMusic music = instances.get(soundId);
+    public void stop(final long soundId) {
+        final TeaVMMusic music = instances.get(soundId);
         if (music != null) {
             music.stop();
         }
     }
 
     @Override
-    public void pause(long soundId) {
-        TeaVMMusic music = instances.get(soundId);
+    public void pause(final long soundId) {
+        final TeaVMMusic music = instances.get(soundId);
         if (music != null) {
             music.pause();
         }
     }
 
     @Override
-    public void resume(long soundId) {
-        TeaVMMusic music = instances.get(soundId);
+    public void resume(final long soundId) {
+        final TeaVMMusic music = instances.get(soundId);
         if (music != null) {
             music.play();
         }
     }
 
     @Override
-    public void setLooping(long soundId, boolean looping) {
-        TeaVMMusic music = instances.get(soundId);
+    public void setLooping(final long soundId, final boolean looping) {
+        final TeaVMMusic music = instances.get(soundId);
         if (music != null) {
             music.setLooping(looping);
         }
     }
 
     @Override
-    public void setPitch(long soundId, float pitch) {
+    public void setPitch(final long soundId, final float pitch) {
     }
 
     @Override
-    public void setVolume(long soundId, float volume) {
-        TeaVMMusic music = instances.get(soundId);
+    public void setVolume(final long soundId, final float volume) {
+        final TeaVMMusic music = instances.get(soundId);
         if (music != null) {
             music.setVolume(volume);
         }
     }
 
     @Override
-    public void setPan(long soundId, float pan, float volume) {
-        TeaVMMusic music = instances.get(soundId);
+    public void setPan(final long soundId, final float pan, final float volume) {
+        final TeaVMMusic music = instances.get(soundId);
         if (music != null) {
             music.setPan(pan, volume);
         }
-    }
-
-    @Override
-    public void setPriority(long soundId, int priority) {
     }
 }
