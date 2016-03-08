@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.teavm.gdx.util.Exceptions;
 import org.teavm.javascript.RenderingContext;
 import org.teavm.vm.BuildTarget;
 import org.teavm.vm.spi.RendererListener;
@@ -99,8 +100,8 @@ public class AssetsCopier implements RendererListener {
 						&& sourceFile.lastModified() == resource.lastModified()) {
 						continue;
 					}
-				} catch (final URISyntaxException e) {
-					// fall back to usual resource copying
+				} catch (final URISyntaxException exception) {
+					Exceptions.ignore(exception); // Fall back to usual resource copying.
 				}
 			}
 			}

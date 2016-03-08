@@ -12,14 +12,13 @@ import org.teavm.jso.dom.html.HTMLDocument;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntSet;
 
 /** @author Alexey Andreev */
 public class TeaVMInput implements Input, EventListener<Event> {
 	static final int MAX_TOUCHES = 20;
 	boolean justTouched = false;
-	private final IntMap<Integer> touchMap = new IntMap<>(20);
+// private final IntMap<Integer> touchMap = new IntMap<>(20);
 	private final boolean[] touched = new boolean[MAX_TOUCHES];
 	private final int[] touchX = new int[MAX_TOUCHES];
 	private final int[] touchY = new int[MAX_TOUCHES];
@@ -254,7 +253,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
 		return Orientation.Landscape;
 	}
 
-	private boolean isCursorCatchedJSNI () {
+	private static boolean isCursorCatchedJSNI () {
 		// TODO: implement
 		return false;
 	}
@@ -267,12 +266,12 @@ public class TeaVMInput implements Input, EventListener<Event> {
 		// TODO: implement
 	}
 
-	private float getMovementXJSNI (final Event event) {
+	private static float getMovementXJSNI (final Event event) {
 		// TODO: implement
 		return 0;
 	}
 
-	private float getMovementYJSNI (final Event event) {
+	private static float getMovementYJSNI (final Event event) {
 		// TODO: implement
 		return 0;
 	}
