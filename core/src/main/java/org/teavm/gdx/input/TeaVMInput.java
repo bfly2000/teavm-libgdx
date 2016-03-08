@@ -229,6 +229,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
 	@Override
 	public boolean isPeripheralAvailable (final Peripheral peripheral) {
 		switch (peripheral) {
+		case Gyroscope:
 		case Accelerometer:
 		case Compass:
 		case OnscreenKeyboard:
@@ -354,14 +355,12 @@ public class TeaVMInput implements Input, EventListener<Event> {
 
 	}
 
-	private int getButton (final int button) {
+	private static int getButton (final int button) {
 		if (button == MouseEvent.LEFT_BUTTON) {
 			return Buttons.LEFT;
-		}
-		if (button == MouseEvent.RIGHT_BUTTON) {
+		} else if (button == MouseEvent.RIGHT_BUTTON) {
 			return Buttons.RIGHT;
-		}
-		if (button == MouseEvent.MIDDLE_BUTTON) {
+		} else if (button == MouseEvent.MIDDLE_BUTTON) {
 			return Buttons.MIDDLE;
 		}
 		return Buttons.LEFT;
@@ -521,14 +520,14 @@ public class TeaVMInput implements Input, EventListener<Event> {
 		// if(hasFocus) e.preventDefault();
 	}
 
-	private int getAvailablePointer () {
-		for (int i = 0; i < MAX_TOUCHES; i++) {
-			if (!touchMap.containsValue(i, false)) {
-			return i;
-			}
-		}
-		return -1;
-	}
+// private int getAvailablePointer () {
+// for (int i = 0; i < MAX_TOUCHES; i++) {
+// if (!touchMap.containsValue(i, false)) {
+// return i;
+// }
+// }
+// return -1;
+// }
 
 	/** borrowed from PlayN, thanks guys **/
 	private static int keyForCode (final int keyCode) {
@@ -565,11 +564,6 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			return Keys.TAB;
 		case KeyCodes.KEY_UP:
 			return Keys.UP;
-
-		case KEY_PAUSE:
-			return Keys.UNKNOWN; // FIXME
-		case KEY_CAPS_LOCK:
-			return Keys.UNKNOWN; // FIXME
 		case KEY_SPACE:
 			return Keys.SPACE;
 		case KEY_INSERT:
@@ -646,11 +640,6 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			return Keys.Y;
 		case KEY_Z:
 			return Keys.Z;
-		case KEY_LEFT_WINDOW_KEY:
-			return Keys.UNKNOWN; // FIXME
-		case KEY_RIGHT_WINDOW_KEY:
-			return Keys.UNKNOWN; // FIXME
-		// case KEY_SELECT_KEY: return Keys.SELECT_KEY;
 		case KEY_NUMPAD0:
 			return Keys.NUMPAD_0;
 		case KEY_NUMPAD1:
@@ -671,16 +660,12 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			return Keys.NUMPAD_8;
 		case KEY_NUMPAD9:
 			return Keys.NUMPAD_9;
-		case KEY_MULTIPLY:
-			return Keys.UNKNOWN; // FIXME
 		case KEY_ADD:
 			return Keys.PLUS;
 		case KEY_SUBTRACT:
 			return Keys.MINUS;
 		case KEY_DECIMAL_POINT_KEY:
 			return Keys.PERIOD;
-		case KEY_DIVIDE:
-			return Keys.UNKNOWN; // FIXME
 		case KEY_F1:
 			return Keys.F1;
 		case KEY_F2:
@@ -707,8 +692,8 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			return Keys.F12;
 		case KEY_NUM_LOCK:
 			return Keys.NUM;
-		case KEY_SCROLL_LOCK:
-			return Keys.UNKNOWN; // FIXME
+		case KEY_SELECT_KEY:
+			return Keys.BUTTON_SELECT;
 		case KEY_SEMICOLON:
 			return Keys.SEMICOLON;
 		case KEY_EQUALS:
@@ -721,8 +706,6 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			return Keys.PERIOD;
 		case KEY_FORWARD_SLASH:
 			return Keys.SLASH;
-		case KEY_GRAVE_ACCENT:
-			return Keys.UNKNOWN; // FIXME
 		case KEY_OPEN_BRACKET:
 			return Keys.LEFT_BRACKET;
 		case KEY_BACKSLASH:
@@ -731,6 +714,19 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			return Keys.RIGHT_BRACKET;
 		case KEY_SINGLE_QUOTE:
 			return Keys.APOSTROPHE;
+		case KEY_GRAVE_ACCENT:
+			return Keys.GRAVE;
+
+		// TODO Validate, make sure that are unsupported.
+		case KEY_MULTIPLY:
+			return Keys.STAR;
+		case KEY_DIVIDE:
+			return Keys.SLASH;
+		case KEY_CAPS_LOCK:
+		case KEY_PAUSE:
+		case KEY_LEFT_WINDOW_KEY:
+		case KEY_RIGHT_WINDOW_KEY:
+		case KEY_SCROLL_LOCK:
 		default:
 			return Keys.UNKNOWN;
 		}

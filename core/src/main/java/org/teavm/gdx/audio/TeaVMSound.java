@@ -132,6 +132,7 @@ public class TeaVMSound implements Sound {
 
 	@Override
 	public void setPitch (final long soundId, final float pitch) {
+		// TODO warn
 	}
 
 	@Override

@@ -74,7 +74,7 @@ public class OverlayTransformer implements ClassHolderTransformer {
 		}
 	}
 
-	private void transformBufferUtils (final ClassHolder cls, final ClassReaderSource innerSource) {
+	private static void transformBufferUtils (final ClassHolder cls, final ClassReaderSource innerSource) {
 		final List<MethodDescriptor> descList = new ArrayList<>();
 		descList.add(new MethodDescriptor("freeMemory", ByteBuffer.class, void.class));
 		descList.add(new MethodDescriptor("newDisposableByteBuffer", int.class, ByteBuffer.class));
@@ -82,7 +82,7 @@ public class OverlayTransformer implements ClassHolderTransformer {
 		replaceMethods(cls, BufferUtilsEmulator.class, innerSource, descList);
 	}
 
-	private void transformMatrix (final ClassHolder cls, final ClassReaderSource innerSource) {
+	private static void transformMatrix (final ClassHolder cls, final ClassReaderSource innerSource) {
 		final List<MethodDescriptor> descList = new ArrayList<>();
 		descList.add(new MethodDescriptor("inv", float[].class, boolean.class));
 		descList.add(new MethodDescriptor("mul", float[].class, float[].class, void.class));
@@ -94,13 +94,13 @@ public class OverlayTransformer implements ClassHolderTransformer {
 			emuClass.getMethod(new MethodDescriptor("matrix4_proj", float[].class, float[].class, int.class, void.class))));
 	}
 
-	private void transformTextureData (final ClassHolder cls, final ClassReaderSource innerSource) {
+	private static void transformTextureData (final ClassHolder cls, final ClassReaderSource innerSource) {
 		final List<MethodDescriptor> descList = new ArrayList<>();
 		descList.add(new MethodDescriptor("loadFromFile", FileHandle.class, Format.class, boolean.class, TextureData.class));
 		replaceMethods(cls, TextureDataEmulator.class, innerSource, descList);
 	}
 
-	private void transformFileHandle (final ClassHolder cls) {
+	private static void transformFileHandle (final ClassHolder cls) {
 		final Set<MethodDescriptor> methodsToRetain = new HashSet<>();
 		final Set<MethodDescriptor> methodsToRetainUnmodified = new HashSet<>();
 		methodsToRetain.add(new MethodDescriptor("<init>", void.class));
@@ -147,7 +147,7 @@ public class OverlayTransformer implements ClassHolderTransformer {
 		}
 	}
 
-	private Program createStubProgram () {
+	private static Program createStubProgram () {
 		final Program program = new Program();
 		program.createVariable(); // this
 		final BasicBlock block = program.createBasicBlock();
@@ -167,7 +167,7 @@ public class OverlayTransformer implements ClassHolderTransformer {
 		return program;
 	}
 
-	private Program createInitStubProgram () {
+	private static Program createInitStubProgram () {
 		final Program program = new Program();
 		final BasicBlock block = program.createBasicBlock();
 		final Variable self = program.createVariable();
@@ -181,7 +181,7 @@ public class OverlayTransformer implements ClassHolderTransformer {
 		return program;
 	}
 
-	private void replaceMethods (final ClassHolder cls, final Class<?> emuType, final ClassReaderSource innerSource,
+	private static void replaceMethods (final ClassHolder cls, final Class<?> emuType, final ClassReaderSource innerSource,
 		final List<MethodDescriptor> descList) {
 		final ClassReader emuCls = innerSource.get(emuType.getName());
 		for (final MethodDescriptor methodDesc : descList) {
@@ -190,7 +190,7 @@ public class OverlayTransformer implements ClassHolderTransformer {
 		}
 	}
 
-	private void replaceClass (final ClassHolder cls, final ClassReader emuCls) {
+	private static void replaceClass (final ClassHolder cls, final ClassReader emuCls) {
 		final ClassRefsRenamer renamer = new ClassRefsRenamer(new Mapper<String, String>() {
 			@Override
 			public String map (final String preimage) {

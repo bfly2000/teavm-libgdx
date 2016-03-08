@@ -9,7 +9,7 @@ sourceCompatibility = 1.8
 ext {
   teaVersion = '0.4.3'
   gdxVersion = '1.9.2'
-  jacksonVersion = '2.5.0'
+  jacksonVersion = '2.7.2'
   isSnapshot = '-SNAPSHOT'
 }
 

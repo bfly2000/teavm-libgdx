@@ -1,17 +1,6 @@
 
 package org.teavm.gdx;
 
-import com.badlogic.gdx.Application;
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Audio;
-import com.badlogic.gdx.Files;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.LifecycleListener;
-import com.badlogic.gdx.Net;
-import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.utils.Clipboard;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,18 +15,30 @@ import org.teavm.jso.browser.TimerHandler;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Audio;
+import com.badlogic.gdx.Files;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.LifecycleListener;
+import com.badlogic.gdx.Net;
+import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.utils.Clipboard;
+
 public class TeaVMApplication implements Application {
-	private ApplicationListener listener;
-	private TeaVMApplicationConfiguration config;
+	private final ApplicationListener listener;
+	private final TeaVMApplicationConfiguration config;
 	private HTMLCanvasElement canvas;
 	private TeaVMGraphics graphics;
 	private TeaVMFiles files;
 	private TeaVMAudio audio;
 	private TeaVMInput input;
 	private int logLevel = LOG_ERROR;
-	private List<LifecycleListener> lifecycleListeners = new ArrayList<>();
+	private final List<LifecycleListener> lifecycleListeners = new ArrayList<>();
 
-	public TeaVMApplication (ApplicationListener listener, TeaVMApplicationConfiguration config) {
+	public TeaVMApplication (final ApplicationListener listener, final TeaVMApplicationConfiguration config) {
 		this.listener = listener;
 		this.config = config;
 	}
@@ -123,49 +124,49 @@ public class TeaVMApplication implements Application {
 	}
 
 	@Override
-	public void log (String tag, String message) {
+	public void log (final String tag, final String message) {
 		if (logLevel > LOG_INFO) {
 			consoleLog("Info " + tag + ": " + message);
 		}
 	}
 
 	@Override
-	public void log (String tag, String message, Throwable exception) {
+	public void log (final String tag, final String message, final Throwable exception) {
 		if (logLevel > LOG_INFO) {
 			consoleLog("Info " + tag + ": " + message);
 		}
 	}
 
 	@Override
-	public void error (String tag, String message) {
+	public void error (final String tag, final String message) {
 		if (logLevel > LOG_ERROR) {
 			consoleLog("Error " + tag + ": " + message);
 		}
 	}
 
 	@Override
-	public void error (String tag, String message, Throwable exception) {
+	public void error (final String tag, final String message, final Throwable exception) {
 		if (logLevel > LOG_ERROR) {
 			consoleLog("Error " + tag + ": " + message);
 		}
 	}
 
 	@Override
-	public void debug (String tag, String message) {
+	public void debug (final String tag, final String message) {
 		if (logLevel >= LOG_DEBUG) {
 			consoleLog("Debug " + tag + ": " + message);
 		}
 	}
 
 	@Override
-	public void debug (String tag, String message, Throwable exception) {
+	public void debug (final String tag, final String message, final Throwable exception) {
 		if (logLevel > LOG_DEBUG) {
 			consoleLog("Debug " + tag + ": " + message);
 		}
 	}
 
 	@Override
-	public void setLogLevel (int logLevel) {
+	public void setLogLevel (final int logLevel) {
 		this.logLevel = logLevel;
 	}
 
@@ -197,7 +198,7 @@ public class TeaVMApplication implements Application {
 	}
 
 	@Override
-	public Preferences getPreferences (String name) {
+	public Preferences getPreferences (final String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -209,7 +210,7 @@ public class TeaVMApplication implements Application {
 	}
 
 	@Override
-	public void postRunnable (Runnable runnable) {
+	public void postRunnable (final Runnable runnable) {
 		// TODO Auto-generated method stub
 
 	}
@@ -219,12 +220,12 @@ public class TeaVMApplication implements Application {
 	}
 
 	@Override
-	public void addLifecycleListener (LifecycleListener listener) {
+	public void addLifecycleListener (final LifecycleListener listener) {
 		lifecycleListeners.add(listener);
 	}
 
 	@Override
-	public void removeLifecycleListener (LifecycleListener listener) {
+	public void removeLifecycleListener (final LifecycleListener listener) {
 		lifecycleListeners.remove(listener);
 	}
 

@@ -16,37 +16,45 @@
 
 package org.teavm.gdx.plugin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SequenceWriter;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.apache.commons.io.IOUtils;
 import org.teavm.javascript.RenderingContext;
 import org.teavm.vm.BuildTarget;
 import org.teavm.vm.spi.RendererListener;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SequenceWriter;
+
 /** @author Alexey Andreev */
 public class AssetsCopier implements RendererListener {
 	private RenderingContext context;
-	private FileDescriptor rootFileDescriptor = new FileDescriptor();
-	private ObjectMapper mapper = new ObjectMapper();
-	private ObjectWriter writer = mapper.writerFor(FileDescriptor.class);
+	private final FileDescriptor rootFileDescriptor = new FileDescriptor();
+	private final ObjectMapper mapper = new ObjectMapper();
+	private final ObjectWriter writer = mapper.writerFor(FileDescriptor.class);
 
 	@Override
-	public void begin (RenderingContext context, BuildTarget buildTarget) throws IOException {
+	public void begin (final RenderingContext context, final BuildTarget buildTarget) throws IOException {
 		this.context = context;
 	}
 
 	@Override
 	public void complete () throws IOException {
-		String dirName = context.getProperties().getProperty("teavm.libgdx.genAssetsDirectory", "");
+		final String dirName = context.getProperties().getProperty("teavm.libgdx.genAssetsDirectory", "");
 		if (!dirName.isEmpty()) {
-			File dir = new File(dirName);
+			final File dir = new File(dirName);
 			dir.mkdirs();
 			copyClasspathAssets(dir);
 			createFSDescriptor(dir);
@@ -55,12 +63,13 @@ public class AssetsCopier implements RendererListener {
 		}
 	}
 
-	private void copyClasspathAssets (File dir) throws IOException {
-		Enumeration<URL> resources = context.getClassLoader().getResources("META-INF/teavm-libgdx/classpath-assets");
-		Set<String> resourcesToCopy = new HashSet<>();
+	@SuppressWarnings("resource")
+	private void copyClasspathAssets (final File dir) throws IOException {
+		final Enumeration<URL> resources = context.getClassLoader().getResources("META-INF/teavm-libgdx/classpath-assets");
+		final Set<String> resourcesToCopy = new HashSet<>();
 		while (resources.hasMoreElements()) {
-			URL resource = resources.nextElement();
-			InputStream input = resource.openStream();
+			final URL resource = resources.nextElement();
+			final InputStream input = resource.openStream();
 			if (input == null) {
 			continue;
 			}
@@ -79,23 +88,23 @@ public class AssetsCopier implements RendererListener {
 			}
 		}
 
-		for (String resourceToCopy : resourcesToCopy) {
-			File resource = new File(dir, resourceToCopy);
+		for (final String resourceToCopy : resourcesToCopy) {
+			final File resource = new File(dir, resourceToCopy);
 			if (resource.exists()) {
-			URL url = context.getClassLoader().getResource(resourceToCopy);
+			final URL url = context.getClassLoader().getResource(resourceToCopy);
 			if (url != null && url.getProtocol().equals("file")) {
 				try {
-					File sourceFile = new File(url.toURI());
+					final File sourceFile = new File(url.toURI());
 					if (sourceFile.exists() && sourceFile.length() == resource.length()
 						&& sourceFile.lastModified() == resource.lastModified()) {
 						continue;
 					}
-				} catch (URISyntaxException e) {
+				} catch (final URISyntaxException e) {
 					// fall back to usual resource copying
 				}
 			}
 			}
-			InputStream input = context.getClassLoader().getResourceAsStream(resourceToCopy);
+			final InputStream input = context.getClassLoader().getResourceAsStream(resourceToCopy);
 			if (input == null) {
 			continue;
 			}
@@ -105,7 +114,7 @@ public class AssetsCopier implements RendererListener {
 	}
 
 	private void createFSDescriptor (File dir) throws IOException {
-		String path = context.getProperties().getProperty("teavm.libgdx.fsJsonPath", "");
+		final String path = context.getProperties().getProperty("teavm.libgdx.fsJsonPath", "");
 		if (path.isEmpty()) {
 			return;
 		}
@@ -113,7 +122,7 @@ public class AssetsCopier implements RendererListener {
 			processFile(dir, rootFileDescriptor);
 		}
 
-		String dirName = context.getProperties().getProperty("teavm.libgdx.warAssetsDirectory", "");
+		final String dirName = context.getProperties().getProperty("teavm.libgdx.warAssetsDirectory", "");
 		if (!dirName.isEmpty()) {
 			dir = new File(dirName);
 			processFile(dir, rootFileDescriptor);
@@ -124,30 +133,31 @@ public class AssetsCopier implements RendererListener {
 		}
 	}
 
-	private void processFile (File file, FileDescriptor desc) {
+	private void processFile (final File file, final FileDescriptor desc) {
 		desc.setName(file.getName());
 		desc.setDirectory(file.isDirectory());
 		if (file.isDirectory()) {
-			for (File child : file.listFiles()) {
-			FileDescriptor childDesc = new FileDescriptor();
+			for (final File child : file.listFiles()) {
+			final FileDescriptor childDesc = new FileDescriptor();
 			processFile(child, childDesc);
 			desc.getChildFiles().add(childDesc);
 			}
 		}
 	}
 
-	private void writeJsonFS (OutputStream output) throws IOException {
-		SequenceWriter seqWriter = writer.writeValues(output);
-		boolean first = true;
-		output.write((byte)'[');
-		for (FileDescriptor desc : rootFileDescriptor.getChildFiles()) {
+	private void writeJsonFS (final OutputStream output) throws IOException {
+		try (SequenceWriter seqWriter = writer.writeValues(output)) {
+			boolean first = true;
+			output.write((byte)'[');
+			for (final FileDescriptor desc : rootFileDescriptor.getChildFiles()) {
 			if (!first) {
-			output.write((byte)',');
+				output.write((byte)',');
 			}
 			first = false;
 			seqWriter.write(desc);
+			}
+			output.write((byte)']');
+			seqWriter.flush();
 		}
-		output.write((byte)']');
-		seqWriter.flush();
 	}
 }
