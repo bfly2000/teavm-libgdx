@@ -1,9 +1,8 @@
 
 package org.teavm.gdx.lifecycle;
 
+import org.teavm.gdx.TeaVMApplication;
 import org.teavm.jso.JSBody;
-import org.teavm.jso.browser.TimerHandler;
-import org.teavm.jso.browser.Window;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.utils.Array;
@@ -19,6 +18,7 @@ public class TeaVMRenderer implements Renderer {
 	private float deltaTime;
 	private long lastRender;
 	private int timerId;
+	private final AnimationFrame callback = this::loop;
 
 	/** @param listener will be informed of rendering events. */
 	public TeaVMRenderer (final ApplicationListener listener) {
@@ -38,12 +38,13 @@ public class TeaVMRenderer implements Renderer {
 
 	@Override
 	public long getFrameId () {
-		// TODO warning
+		TeaVMApplication.logUnsupported("Frame ID without debug renderer");
 		return 0L;
 	}
 
 	@Override
 	public int getFramesPerSecond () {
+		TeaVMApplication.logUnsupported("FPS without debug renderer");
 		return 0;
 	}
 
@@ -54,34 +55,23 @@ public class TeaVMRenderer implements Renderer {
 
 	@Override
 	public void start () {
-		lastRender = System.currentTimeMillis(); // TODO does it invoke Date.now()?
-		// frameId = requestAnimationFrame();
-		timerId = Window.setInterval(new TimerHandler() {
-			@Override
-			public void onTimer () {
-			loop();
-			}
-		}, 17);
+		lastRender = System.currentTimeMillis(); // TODO Does it invoke Date.now()?
+		timerId = requestAnimationFrame(callback);
 	}
 
 	@Override
 	public void stop () {
-		Window.clearInterval(timerId);
-		// cancelAnimationFrame(0L);
+		cancelAnimationFrame(timerId);
 	}
 
-	/** @param runnable will be executed as the animation frame. If it is the main loop runnable, it should recursively invoke
-	 *           this method passing itself as the parameter.
-	 * @return ID of the frame. */
-	protected long requestAnimationFrame (final Runnable runnable) {
-		// TODO implement requestAnimationFrame
-		return 0L;
-	}
+	/** @param callback will be executed as the animation frame.
+	 * @return ID of the request. */
+	@JSBody(params = "callback", script = "return window.requestAnimationFrame(callback);")
+	public static native int requestAnimationFrame (AnimationFrame callback);
 
-	/** @param id frame with this ID will be cancelled. */
-	protected void cancelAnimationFrame (final long id) {
-		// TODO implement
-	}
+	/** @param requestId ID of the request to be cancelled. */
+	@JSBody(params = "requestId", script = "window.cancelAnimationFrame(requestId);")
+	public static native void cancelAnimationFrame (int requestId);
 
 	/** Main application's loop. */
 	protected void loop () {
@@ -97,7 +87,7 @@ public class TeaVMRenderer implements Renderer {
 			runnablesToInvoke.clear();
 		}
 		listener.render();
-		// frameId = requestAnimationFrame();
+		timerId = requestAnimationFrame(callback);
 	}
 
 	@Override

@@ -10,7 +10,11 @@ import org.teavm.jso.JSBody;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.core.JSArrayReader;
 import org.teavm.jso.core.JSString;
+import org.teavm.jso.dom.events.Event;
+import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
+import org.teavm.jso.dom.html.HTMLDocument;
+import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.webgl.WebGLContextAttributes;
 import org.teavm.jso.webgl.WebGLRenderingContext;
 
@@ -61,6 +65,16 @@ public class TeaVMGraphics implements Graphics {
 		context = (WebGLRenderingContext)canvas.getContext("webgl");
 		context.viewport(0, 0, oldWidth, oldHeight);
 		gl20 = createGL20(context);
+		addFullscreenModeListener();
+	}
+
+	private void addFullscreenModeListener () {
+		final EventListener<Event> fullscreenListener = event -> fullscreenChanged();
+		final HTMLDocument document = HTMLDocument.current();
+		document.addEventListener("fullscreenchange", fullscreenListener, false);
+		document.addEventListener("webkitfullscreenchange", fullscreenListener, false);
+		document.addEventListener("mozfullscreenchange", fullscreenListener, false);
+		document.addEventListener("msfullscreenchange", fullscreenListener, false);
 	}
 
 	/** Sets {@link WebGLContextAttributes} according to {@link TeaVMApplicationConfiguration}. */
@@ -297,11 +311,15 @@ public class TeaVMGraphics implements Graphics {
 			canvas.setWidth(screenWidth);
 			canvas.setHeight(screenHeight);
 			addResizeEvent(screenWidth, screenHeight);
-			// TODO Set fullscreen, add listener that resizes application if it goes back to window mode.
+			switchToFullscreen(canvas);
 			return true;
 		}
 		return false;
 	}
+
+	/** @param element will request switching to fullscreen mode. */
+	@JSBody(params = "element", script = "if(element.requestFullscreen){element.requestFullscreen();}else if(element.webkitRequestFullScreen){element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);}else if(element.mozRequestFullScreen){element.mozRequestFullScreen();}else if(element.msRequestFullscreen){element.msRequestFullscreen();}")
+	protected native void switchToFullscreen (HTMLElement element);
 
 	/** Will post an event which will resize the game during the next render call. Width and height have to match current
 	 * application size.
