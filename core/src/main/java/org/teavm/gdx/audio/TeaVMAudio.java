@@ -1,8 +1,6 @@
 
 package org.teavm.gdx.audio;
 
-import org.teavm.gdx.files.TeaVMFileHandle;
-
 import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.audio.AudioDevice;
 import com.badlogic.gdx.audio.AudioRecorder;
@@ -11,25 +9,27 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-/** @author Alexey Andreev */
+/** Default {@link Audio} implementation for TeaVM application. Supports {@link Music} and {@link Sound} objects. Does not support
+ * {@link AudioDevice} and {@link AudioRecorder}.
+ * @author Alexey Andreev */
 public class TeaVMAudio implements Audio {
 	@Override
-	public AudioDevice newAudioDevice (int samplingRate, boolean isMono) {
-		throw new GdxRuntimeException("AudioDevice not supported by TeaVM backend");
+	public Sound newSound (final FileHandle fileHandle) {
+		return new TeaVMSound(fileHandle);
 	}
 
 	@Override
-	public AudioRecorder newAudioRecorder (int samplingRate, boolean isMono) {
-		throw new GdxRuntimeException("AudioDevice not supported by TeaVM backend");
+	public Music newMusic (final FileHandle file) {
+		return new TeaVMMusic(file);
 	}
 
 	@Override
-	public Sound newSound (FileHandle fileHandle) {
-		return new TeaVMSound((TeaVMFileHandle)fileHandle);
+	public AudioDevice newAudioDevice (final int samplingRate, final boolean isMono) {
+		throw new GdxRuntimeException("AudioDevice is not supported by TeaVM application.");
 	}
 
 	@Override
-	public Music newMusic (FileHandle file) {
-		return new TeaVMMusic((TeaVMFileHandle)file);
+	public AudioRecorder newAudioRecorder (final int samplingRate, final boolean isMono) {
+		throw new GdxRuntimeException("AudioDevice is not supported by TeaVM application.");
 	}
 }

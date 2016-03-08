@@ -11,9 +11,8 @@ import com.badlogic.gdx.utils.Clipboard;
 
 /** Clipboard implementation for TeaVM applications. Tries hard to use the general system clipboard, but might cause issues on
  * some browsers (especially Safari, which does not support copy and paste commands). Most browsers allow to access clipboard only
- * directly after an user's action, and this is not exactly how the Dragome input processor works. Use {@link MockUpClipboard} if
+ * directly after an user's action, and this is not exactly how the TeaVM input processor works. Use {@link MockUpClipboard} if
  * you do not want or need to support global clipboard.
- *
  * @author MJ
  * @see MockUpClipboard */
 public class TeaVMClipboard implements Clipboard {
@@ -86,9 +85,11 @@ public class TeaVMClipboard implements Clipboard {
 	@JSBody(params = {}, script = "document.execCommand('copy');")
 	private native void executeCopy ();
 
+	/** @return true if {@link #getClipboardData()} can be used. */
 	@JSBody(params = {}, script = "return window.clipboardData;")
 	public static native boolean isClipboardDataSupported ();
 
+	/** @return current clipboard data. */
 	@JSBody(params = {}, script = "return window.clipboardData.getData('Text');")
 	public static native String getClipboardData ();
 }

@@ -16,6 +16,7 @@
 
 package org.teavm.gdx.graphics;
 
+import org.teavm.gdx.TeaVMApplication;
 import org.teavm.gdx.TeaVMApplicationConfiguration;
 import org.teavm.gdx.graphics.webgl.TeaVMGL20;
 import org.teavm.jso.browser.Screen;
@@ -46,9 +47,9 @@ public class TeaVMGraphics implements Graphics {
 	float fps;
 	private final TeaVMGL20 gl20;
 
-	public TeaVMGraphics (final HTMLCanvasElement element, final TeaVMApplicationConfiguration config) {
-		this.element = element;
-		this.config = config;
+	public TeaVMGraphics (final TeaVMApplication application) {
+		config = application.getConfiguration();
+		element = application.getCanvas();
 
 		final WebGLContextAttributes attr = WebGLContextAttributes.create();
 		attr.setAlpha(config.isAlphaEnabled());

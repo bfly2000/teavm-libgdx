@@ -6,7 +6,8 @@ import org.teavm.gdx.graphics.TeaVMGraphics.OrientationLockType;
 import com.badlogic.gdx.Graphics;
 
 /** Allows to configure {@link TeaVMApplication}.
- * @author MJ */
+ * @author MJ
+ * @author Alexey Andreev */
 public class TeaVMApplicationConfiguration {
 	private OrientationLockType fullscreenOrientation;
 	private String canvasId = "teavm";

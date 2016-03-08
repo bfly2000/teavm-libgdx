@@ -1,26 +1,27 @@
 
 package org.teavm.gdx.audio;
 
-import com.badlogic.gdx.audio.Music;
-
-import org.teavm.gdx.files.TeaVMFileHandle;
 import org.teavm.jso.dom.events.Event;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.HTMLAudioElement;
 import org.teavm.jso.dom.html.HTMLDocument;
 
-/** @author Alexey Andreev */
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.files.FileHandle;
+
+/** Default implementation of {@link Music} for TeaVM applications. Uses {@link HTMLAudioElement} to play sounds.
+ * @author Alexey Andreev */
 public class TeaVMMusic implements Music {
 	private HTMLAudioElement element;
 	private boolean started;
 	private OnCompletionListener listener;
 
-	public TeaVMMusic (TeaVMFileHandle file) {
+	public TeaVMMusic (final FileHandle file) {
 		element = (HTMLAudioElement)HTMLDocument.current().createElement("audio");
 		element.setSrc("assets/" + file.path());
 		element.addEventListener("ended", new EventListener<Event>() {
 			@Override
-			public void handleEvent (Event evt) {
+			public void handleEvent (final Event evt) {
 			if (listener != null) {
 				listener.onCompletion(TeaVMMusic.this);
 			}
@@ -31,7 +32,7 @@ public class TeaVMMusic implements Music {
 
 	private void checkDisposed () {
 		if (element == null) {
-			throw new IllegalStateException("This music instance is already disposed");
+			throw new IllegalStateException("This music instance is already disposed.");
 		}
 	}
 
@@ -63,7 +64,7 @@ public class TeaVMMusic implements Music {
 	}
 
 	@Override
-	public void setLooping (boolean isLooping) {
+	public void setLooping (final boolean isLooping) {
 		checkDisposed();
 		element.setLoop(isLooping);
 	}
@@ -75,7 +76,7 @@ public class TeaVMMusic implements Music {
 	}
 
 	@Override
-	public void setVolume (float volume) {
+	public void setVolume (final float volume) {
 		checkDisposed();
 		element.setVolume(volume);
 	}
@@ -87,13 +88,13 @@ public class TeaVMMusic implements Music {
 	}
 
 	@Override
-	public void setPan (float pan, float volume) {
+	public void setPan (final float pan, final float volume) {
 		checkDisposed();
 		element.setVolume(volume);
 	}
 
 	@Override
-	public void setPosition (float position) {
+	public void setPosition (final float position) {
 		checkDisposed();
 		element.setCurrentTime(position);
 	}
@@ -113,7 +114,7 @@ public class TeaVMMusic implements Music {
 	}
 
 	@Override
-	public void setOnCompletionListener (OnCompletionListener listener) {
+	public void setOnCompletionListener (final OnCompletionListener listener) {
 		this.listener = listener;
 	}
 }

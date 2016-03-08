@@ -4,22 +4,24 @@ package org.teavm.gdx.audio;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.teavm.gdx.files.TeaVMFileHandle;
+import org.teavm.gdx.TeaVMApplication;
 
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Music.OnCompletionListener;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 
-/** @author Alexey Andreev */
+/** Default {@link Sound} implementation for TeaVM applications. Uses multiple {@link TeaVMMusic} instances to play sounds.
+ * @author Alexey Andreev */
 public class TeaVMSound implements Sound {
-	private final TeaVMFileHandle file;
+	private final FileHandle file;
 	private final Map<Long, TeaVMMusic> instances = new HashMap<>();
 	private long nextId;
 	private final float volume = 1;
 	private final float pitch = 1;
 	private final float pan = 0.5f;
 
-	public TeaVMSound (final TeaVMFileHandle file) {
+	public TeaVMSound (final FileHandle file) {
 		this.file = file;
 	}
 
@@ -132,7 +134,7 @@ public class TeaVMSound implements Sound {
 
 	@Override
 	public void setPitch (final long soundId, final float pitch) {
-		// TODO warn
+		TeaVMApplication.logUnsupported("Sound#setPitch");
 	}
 
 	@Override
