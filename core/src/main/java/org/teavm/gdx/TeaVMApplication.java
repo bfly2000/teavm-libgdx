@@ -7,6 +7,7 @@ import org.teavm.gdx.clipboard.TeaVMClipboard;
 import org.teavm.gdx.files.TeaVMFileLoader;
 import org.teavm.gdx.files.TeaVMFilePreloadListener;
 import org.teavm.gdx.files.TeaVMFiles;
+import org.teavm.gdx.graphics.DebugTeaVMGraphics;
 import org.teavm.gdx.graphics.TeaVMGraphics;
 import org.teavm.gdx.graphics.resizing.ResizeListener;
 import org.teavm.gdx.input.TeaVMInput;
@@ -148,7 +149,8 @@ public class TeaVMApplication implements Application {
 	}
 
 	/** @return a new instance of {@link Graphics} implementation, handling application's graphics.
-	 * @see TeaVMGraphics */
+	 * @see TeaVMGraphics
+	 * @see DebugTeaVMGraphics */
 	protected Graphics createGraphics () {
 		return new TeaVMGraphics(this);
 	}

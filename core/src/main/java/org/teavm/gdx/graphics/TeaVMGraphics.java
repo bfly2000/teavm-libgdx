@@ -1,25 +1,12 @@
-/*
- *  Copyright 2015 Alexey Andreev.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
 
 package org.teavm.gdx.graphics;
 
 import org.teavm.gdx.TeaVMApplication;
 import org.teavm.gdx.TeaVMApplicationConfiguration;
+import org.teavm.gdx.graphics.resizing.Resizer;
 import org.teavm.gdx.graphics.webgl.TeaVMGL20;
-import org.teavm.jso.browser.Screen;
+import org.teavm.gdx.lifecycle.Renderer;
+import org.teavm.jso.JSBody;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.core.JSArrayReader;
 import org.teavm.jso.core.JSString;
@@ -27,40 +14,74 @@ import org.teavm.jso.dom.html.HTMLCanvasElement;
 import org.teavm.jso.webgl.WebGLContextAttributes;
 import org.teavm.jso.webgl.WebGLRenderingContext;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Cursor.SystemCursor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
-/** @author Alexey Andreev */
+/** Default implementation of {@link Graphics} for TeaVM applications. Wraps around a HTML canvas element and WebGL. Does not
+ * support GL30. Allows to go to fullscreen mode only if chosen display mode matches current screen size. Allows to change cursors
+ * and current page title. Always reports only one {@link Monitor} and {@link DisplayMode}. Does not support vSync settings.
+ * @author MJ
+ * @author Alexey Andreev */
 public class TeaVMGraphics implements Graphics {
-	private final HTMLCanvasElement element;
-	private final TeaVMApplicationConfiguration config;
+	/** Pixels per inch value. */
+	public static final float PPI = 96f;
+	public static final float DENSITY = PPI / 160f;
+	/** Pixels per centimeters value. */
+	public static final float PPC = PPI / 2.54f;
+	/** Bits per pixel value for display mode. */
+	public static final int BPP = 8;
+	/** Refresh rate value for display mode. Roughly matches expected FPS. */
+	public static final int REFRESH_RATE = 60;
+
+	private final TeaVMApplicationConfiguration configuration;
+	private final HTMLCanvasElement canvas;
 	private final WebGLRenderingContext context;
-	public long frameId = -1;
-	float deltaTime;
-	long lastTimeStamp;
-	long time;
-	int frames;
-	float fps;
-	private final TeaVMGL20 gl20;
+	private final Renderer renderer;
+	private final GL20 gl20;
+	// Cache:
+	private final Monitor monitor = new TeaVMMonitor(0, 0, TeaVMApplication.LOGGING_TAG);
+	private final DisplayMode displayMode = new TeaVMDisplayMode(getScreenWidth(), getScreenHeight(), REFRESH_RATE, BPP);
+	private String extensions;
+	private int oldWidth;
+	private int oldHeight;
 
 	public TeaVMGraphics (final TeaVMApplication application) {
-		config = application.getConfiguration();
-		element = application.getCanvas();
+		configuration = application.getConfiguration();
+		canvas = application.getCanvas();
+		renderer = application.getRenderer();
+		oldWidth = canvas.getWidth();
+		oldHeight = canvas.getHeight();
+		setWebGlAttributes();
+		context = (WebGLRenderingContext)canvas.getContext("webgl");
+		context.viewport(0, 0, oldWidth, oldHeight);
+		gl20 = createGL20(context);
+	}
 
-		final WebGLContextAttributes attr = WebGLContextAttributes.create();
-		attr.setAlpha(config.isAlphaEnabled());
-		attr.setAntialias(config.isAntialiasEnabled());
-		attr.setStencil(config.isStencilEnabled());
-		attr.setPremultipliedAlpha(config.isPremultipliedAlpha());
-		attr.setPreserveDrawingBuffer(config.isDrawingBufferPreserved());
+	/** Sets {@link WebGLContextAttributes} according to {@link TeaVMApplicationConfiguration}. */
+	protected void setWebGlAttributes () {
+		final WebGLContextAttributes attributes = WebGLContextAttributes.create();
+		attributes.setAlpha(configuration.isAlphaEnabled());
+		attributes.setAntialias(configuration.isAntialiasEnabled());
+		attributes.setStencil(configuration.isStencilEnabled());
+		attributes.setPremultipliedAlpha(configuration.isPremultipliedAlpha());
+		attributes.setPreserveDrawingBuffer(configuration.isDrawingBufferPreserved());
+	}
 
-		context = (WebGLRenderingContext)element.getContext("webgl");
-		context.viewport(0, 0, element.getWidth(), element.getHeight());
-		gl20 = new TeaVMGL20(context);
+	/** @param context current WebGL rendering context obtained from the canvas.
+	 * @return a new instance of {@link GL20}. */
+	protected GL20 createGL20 (final WebGLRenderingContext context) {
+		return new TeaVMGL20(context);
+	}
+
+	/** @return current WebGL rendering context obtained from the canvas. */
+	public WebGLRenderingContext getContext () {
+		return context;
 	}
 
 	@Override
@@ -69,43 +90,64 @@ public class TeaVMGraphics implements Graphics {
 	}
 
 	@Override
+	public GL30 getGL30 () {
+		TeaVMApplication.logUnsupported("GL30");
+		return null;
+	}
+
+	@Override
 	public GL20 getGL20 () {
 		return gl20;
 	}
 
 	@Override
-	public GL30 getGL30 () {
-		return null;
-	}
-
-	@Override
 	public int getWidth () {
-		return element.getWidth();
+		return canvas.getWidth();
 	}
 
 	@Override
 	public int getHeight () {
-		return element.getHeight();
+		return canvas.getHeight();
+	}
+
+	@Override
+	public int getBackBufferWidth () {
+		return canvas.getWidth();
+	}
+
+	@Override
+	public int getBackBufferHeight () {
+		return canvas.getHeight();
+	}
+
+	/** @return width of the whole screen (in pixels) as reported by the browser. */
+	public int getScreenWidth () {
+		return Window.current().getScreen().getWidth();
+	}
+
+	/** @return height of the whole screen (in pixels) as reported by the browser. */
+	public int getScreenHeight () {
+		return Window.current().getScreen().getHeight();
 	}
 
 	@Override
 	public long getFrameId () {
-		return frameId;
+		return renderer.getFrameId();
 	}
 
 	@Override
 	public float getDeltaTime () {
-		return deltaTime;
+		return renderer.getDeltaTime();
 	}
 
 	@Override
 	public float getRawDeltaTime () {
-		return deltaTime;
+		return renderer.getDeltaTime();
 	}
 
 	@Override
 	public int getFramesPerSecond () {
-		return (int)fps;
+		return renderer.getFramesPerSecond();
 	}
 
 	@Override
@@ -115,51 +157,90 @@ public class TeaVMGraphics implements Graphics {
 
 	@Override
 	public float getPpiX () {
-		return 96;
+		return PPI;
 	}
 
 	@Override
 	public float getPpiY () {
-		return 96;
+		return PPI;
 	}
 
 	@Override
 	public float getPpcX () {
-		return 96 / 2.54f;
+		return PPC;
 	}
 
 	@Override
 	public float getPpcY () {
-		return 96 / 2.54f;
+		return PPC;
 	}
 
 	@Override
 	public float getDensity () {
-		return 0;
+		return DENSITY;
 	}
 
 	@Override
 	public boolean supportsDisplayModeChange () {
-		return true;
+		return isFullscreenModeSupported();
+	}
+
+	/** @return true if application can go to fullscreen mode. */
+	@JSBody(params = {}, script = "return document.fullscreenEnabled||document.webkitFullscreenEnabled||document.mozFullScreenEnabled||document.msFullscreenEnabled||false;")
+	protected native boolean isFullscreenModeSupported ();
+
+	@Override
+	public Monitor getPrimaryMonitor () {
+		return monitor;
+	}
+
+	@Override
+	public Monitor getMonitor () {
+		return monitor;
+	}
+
+	@Override
+	public Monitor[] getMonitors () {
+		return new Monitor[] {monitor};
 	}
 
 	@Override
 	public DisplayMode[] getDisplayModes () {
-		final Screen screen = Window.current().getScreen();
-		return new DisplayMode[] {new DisplayMode(screen.getWidth(), screen.getHeight(), 60, 8) {}};
+		return new DisplayMode[] {displayMode};
+	}
+
+	@Override
+	public DisplayMode[] getDisplayModes (final Monitor monitor) {
+		return new DisplayMode[] {displayMode};
+	}
+
+	@Override
+	public DisplayMode getDisplayMode () {
+		return displayMode;
+	}
+
+	@Override
+	public DisplayMode getDisplayMode (final Monitor monitor) {
+		return displayMode;
 	}
 
 	@Override
 	public void setTitle (final String title) {
+		setDocumentTitle(title);
 	}
+
+	/** @param newTitle will become the title of the current HTML document. */
+	@JSBody(params = "newTitle", script = "document.title=newTitle")
+	protected native void setDocumentTitle (String newTitle);
 
 	@Override
 	public void setVSync (final boolean vsync) {
+		TeaVMApplication.logUnsupported("vSync");
 	}
 
 	@Override
-	public BufferFormat getBufferFormat () {
-		return new BufferFormat(8, 8, 8, 0, 16, config.isStencilEnabled() ? 8 : 0, 0, false);
+	public BufferFormat getBufferFormat () { // Mimics GWT backend.
+		return new BufferFormat(8, 8, 8, 0, 16, configuration.isStencilEnabled() ? 8 : 0, 0, false);
 	}
 
 	@Override
@@ -174,97 +255,140 @@ public class TeaVMGraphics implements Graphics {
 	}
 
 	@Override
-	public void setContinuousRendering (final boolean isContinuous) {
-	}
-
-	@Override
 	public boolean isContinuousRendering () {
-		return false;
+		return true;
 	}
 
 	@Override
-	public void requestRendering () {
-	}
-
-	@Override
-	public boolean isFullscreen () {
-		return false;
-	}
-
-	public void update () {
-		final long currTimeStamp = System.currentTimeMillis();
-		deltaTime = (currTimeStamp - lastTimeStamp) / 1000.0f;
-		lastTimeStamp = currTimeStamp;
-		time += deltaTime;
-		frames++;
-		if (time > 1) {
-			fps = frames;
-			time = 0;
-			frames = 0;
+	public void setContinuousRendering (final boolean isContinuous) {
+		if (!isContinuous) { // TODO GWT does not support this, should we?
+			TeaVMApplication.logUnsupported("Graphics#setContinuousRendering(false)");
 		}
 	}
 
 	@Override
-	public int getBackBufferWidth () {
-		return 0;
+	public void requestRendering () {
+		TeaVMApplication.logUnsupported("Graphics#requestRendering");
 	}
 
 	@Override
-	public int getBackBufferHeight () {
-		return 0;
+	public boolean isFullscreen () {
+		return isFullscreenModeOn();
 	}
 
-	@Override
-	public Monitor getPrimaryMonitor () {
-		return null;
-	}
-
-	@Override
-	public Monitor getMonitor () {
-		return null;
-	}
-
-	@Override
-	public Monitor[] getMonitors () {
-		return null;
-	}
-
-	@Override
-	public DisplayMode[] getDisplayModes (final Monitor monitor) {
-		return null;
-	}
-
-	@Override
-	public DisplayMode getDisplayMode () {
-		return null;
-	}
-
-	@Override
-	public DisplayMode getDisplayMode (final Monitor monitor) {
-		return null;
-	}
+	/** @return true if application is currently in fullscreen mode. */
+	@JSBody(params = {}, script = "return document.fullscreenElement!=null||document.msFullscreenElement!=null||document.webkitFullscreenElement!=null||document.mozFullScreenElement!=null||document.webkitIsFullScreen||document.mozFullScreen||false;")
+	protected native boolean isFullscreenModeOn ();
 
 	@Override
 	public boolean setFullscreenMode (final DisplayMode displayMode) {
+		if (this.displayMode.equals(displayMode)) {
+			return enterFullscreen();
+		}
 		return false;
 	}
+
+	/** Attempts to enter fullscreen mode. Returns true if succeeded. */
+	public boolean enterFullscreen () {
+		if (isFullscreenModeSupported()) {
+			oldWidth = canvas.getWidth();
+			oldHeight = canvas.getHeight();
+			final int screenWidth = getScreenWidth(), screenHeight = getScreenHeight();
+			canvas.setWidth(screenWidth);
+			canvas.setHeight(screenHeight);
+			addResizeEvent(screenWidth, screenHeight);
+			// TODO Set fullscreen, add listener that resizes application if it goes back to window mode.
+			return true;
+		}
+		return false;
+	}
+
+	/** Will post an event which will resize the game during the next render call. Width and height have to match current
+	 * application size.
+	 * @param width current application width.
+	 * @param height current application height. */
+	protected void addResizeEvent (final int width, final int height) {
+		// Change to Gdx.app.getApplicationListener().resize(width, height); for immediate resize.
+		Gdx.app.postRunnable(new Resizer(width, height));
+	}
+
+	/** Should be invoked each time the application exits fullscreen mode. */
+	public void fullscreenChanged () {
+		if (isFullscreen()) {
+			lockOrientation();
+		} else {
+			if (canvas.getWidth() != oldWidth || canvas.getHeight() != oldHeight) {
+			canvas.setWidth(oldWidth);
+			canvas.setHeight(oldHeight);
+			addResizeEvent(oldWidth, oldHeight);
+			}
+			unlockFullscreenOrientation();
+		}
+	}
+
+	/** Attempts to lock orientation according to application's configuration object. Should be executed after entering fullscreen
+	 * mode. */
+	public void lockOrientation () {
+		final OrientationLockType orientation = configuration.getFullscreenOrientation();
+		if (orientation != null) {
+			lockOrientation(orientation.getName());
+		}
+	}
+
+	/** @param orientationType name of the type of orientation to lock. */
+	@JSBody(params = "orientationType", script = "var lock=screen.lockOrientation||screen.mozLockOrientation||screen.msLockOrientation||screen.webkitLockOrientation;if(lock){lock(orientationType);}else if(screen.orientation&&screen.orientation.lock){screen.orientation.lock(orientationType);}")
+	protected native void lockOrientation (String orientationType);
+
+	/** Attempts to unlock orientation. Should be executed during exiting from fullscreen mode. */
+	public void unlockFullscreenOrientation () {
+		if (configuration.getFullscreenOrientation() != null) {
+			unlockOrientation();
+		}
+	}
+
+	/** Attempts to unlock orientation (if set). */
+	@JSBody(params = {}, script = "var unlock=screen.unlockOrientation||screen.mozUnlockOrientation||screen.msUnlockOrientation||screen.webkitUnlockOrientation;if(unlock){unlock();}else if(screen.orientation&&screen.orientation.unlock){screen.orientation.unlock();}")
+	protected native void unlockOrientation ();
 
 	@Override
 	public boolean setWindowedMode (final int width, final int height) {
-		return false;
+		if (isFullscreen()) {
+			exitFullscreen();
+		}
+		canvas.setWidth(width);
+		canvas.setHeight(height);
+		oldWidth = width;
+		oldHeight = height;
+		addResizeEvent(width, height);
+		return true;
 	}
+
+	/** Attempts to exit full screen mode. Should be a no-op if application is currently in windowed mode. */
+	@JSBody(params = {}, script = "if(document.exitFullscreen)document.exitFullscreen();if(document.msExitFullscreen)document.msExitFullscreen();if(document.webkitExitFullscreen)document.webkitExitFullscreen();if(document.mozExitFullscreen)document.mozExitFullscreen();if(document.webkitCancelFullScreen)document.webkitCancelFullScreen();")
+	public native void exitFullscreen ();
 
 	@Override
 	public Cursor newCursor (final Pixmap pixmap, final int xHotspot, final int yHotspot) {
-		return null;
+		return new TeaVMCursor(pixmap, xHotspot, yHotspot);
 	}
 
 	@Override
 	public void setCursor (final Cursor cursor) {
+		if (cursor instanceof TeaVMCursor) {
+			setCursor(((TeaVMCursor)cursor).getCss());
+		} else {
+			throw new GdxRuntimeException("Do not create Cursor instances manually, use Graphics#newCursor instead.");
+		}
 	}
 
 	@Override
 	public void setSystemCursor (final SystemCursor systemCursor) {
+		setCursor(TeaVMCursor.getNameForSystemCursor(systemCursor));
+	}
+
+	/** @param css will be set in canvas style attribute as "cursor". */
+	protected void setCursor (final String css) {
+		canvas.getStyle().setProperty("cursor", css);
 	}
 
 	/** Allows to support orientation lock during fullscreen mode.
@@ -288,6 +412,41 @@ public class TeaVMGraphics implements Graphics {
 		@Override
 		public String getName () {
 			return name;
+		}
+	}
+
+	/** Allows to create an instance of {@link DisplayMode}, which has a protected constructor.
+	 *
+	 * @author MJ */ // ...for some unknown reason.
+	protected static class TeaVMDisplayMode extends DisplayMode {
+		public TeaVMDisplayMode (final int width, final int height, final int refreshRate, final int bitsPerPixel) {
+			super(width, height, refreshRate, bitsPerPixel);
+		}
+
+		@Override
+		public boolean equals (final Object object) {
+			if (object == this) {
+			return true;
+			} else if (object instanceof DisplayMode) {
+			final DisplayMode other = (DisplayMode)object;
+			return width == other.width && height == other.height && refreshRate == other.refreshRate
+				&& bitsPerPixel == other.bitsPerPixel;
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode () {
+			return width + 13 * height + 53 * refreshRate + 163 * bitsPerPixel;
+		}
+	}
+
+	/** Allows to create an instance of {@link Monitor}, which has a protected constructor.
+	 *
+	 * @author MJ */ // ...for some unknown reason.
+	protected static class TeaVMMonitor extends Monitor {
+		public TeaVMMonitor (final int virtualX, final int virtualY, final String name) {
+			super(virtualX, virtualY, name);
 		}
 	}
 }

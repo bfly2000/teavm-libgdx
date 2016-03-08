@@ -45,30 +45,32 @@ import org.teavm.jso.webgl.WebGLUniformLocation;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-/** @author Alexey Andreev */
+/** Default implementation of {@link GL20} for TeaVM applications. Wraps around WebGL.
+ * @author Alexey Andreev */
 public class TeaVMGL20 implements GL20 {
-	final Map<Integer, WebGLProgram> programs = new HashMap<>();
-	int nextProgramId = 1;
-	final Map<Integer, WebGLShader> shaders = new HashMap<>();
-	int nextShaderId = 1;
-	final Map<Integer, WebGLBuffer> buffers = new HashMap<>();
-	int nextBufferId = 1;
-	final Map<Integer, WebGLFramebuffer> frameBuffers = new HashMap<>();
-	int nextFrameBufferId = 1;
-	final Map<Integer, WebGLRenderbuffer> renderBuffers = new HashMap<>();
-	int nextRenderBufferId = 1;
-	final Map<Integer, WebGLTexture> textures = new HashMap<>();
-	int nextTextureId = 1;
-	final Map<Integer, Map<Integer, WebGLUniformLocation>> uniforms = new HashMap<>();
-	int nextUniformId = 1;
-	int currProgram = 0;
+	// Note: look for GdxRuntimeExceptions for missing features that might have to be fixed eventually.
+	private final Map<Integer, WebGLProgram> programs = new HashMap<>();
+	private int nextProgramId = 1;
+	private final Map<Integer, WebGLShader> shaders = new HashMap<>();
+	private int nextShaderId = 1;
+	private final Map<Integer, WebGLBuffer> buffers = new HashMap<>();
+	private int nextBufferId = 1;
+	private final Map<Integer, WebGLFramebuffer> frameBuffers = new HashMap<>();
+	private final int nextFrameBufferId = 1;
+	private final Map<Integer, WebGLRenderbuffer> renderBuffers = new HashMap<>();
+	private int nextRenderBufferId = 1;
+	private final Map<Integer, WebGLTexture> textures = new HashMap<>();
+	private int nextTextureId = 1;
+	private final Map<Integer, Map<Integer, WebGLUniformLocation>> uniforms = new HashMap<>();
+	private int nextUniformId = 1;
+	private int currProgram = 0;
 
-	Float32Array floatBuffer = Float32Array.create(2000 * 20);
-	Int32Array intBuffer = Int32Array.create(2000 * 6);
-	Int16Array shortBuffer = Int16Array.create(2000 * 6);
-	float[] floatArray = new float[16000];
+	private Float32Array floatBuffer = Float32Array.create(2000 * 20);
+	private Int32Array intBuffer = Int32Array.create(2000 * 6);
+	private Int16Array shortBuffer = Int16Array.create(2000 * 6);
+	private final float[] floatArray = new float[16000];
 
-	final WebGLRenderingContext gl;
+	protected final WebGLRenderingContext gl;
 
 	public TeaVMGL20 (final WebGLRenderingContext gl) {
 		this.gl = wrapContext(gl);
@@ -199,7 +201,7 @@ public class TeaVMGL20 implements GL20 {
 			progUniforms = new HashMap<>();
 			uniforms.put(program, progUniforms);
 		}
-		// FIXME check if uniform already stored.
+		// FIXME Check if uniform already stored.
 		final int id = nextUniformId++;
 		progUniforms.put(id, location);
 		return id;
@@ -313,13 +315,13 @@ public class TeaVMGL20 implements GL20 {
 	@Override
 	public void glCompressedTexImage2D (final int target, final int level, final int internalformat, final int width,
 		final int height, final int border, final int imageSize, final Buffer data) {
-		throw new GdxRuntimeException("compressed textures not supported by GWT WebGL backend");
+		throw new GdxRuntimeException("compressed textures not supported by WebGL backend.");
 	}
 
 	@Override
 	public void glCompressedTexSubImage2D (final int target, final int level, final int xoffset, final int yoffset,
 		final int width, final int height, final int format, final int imageSize, final Buffer data) {
-		throw new GdxRuntimeException("compressed textures not supported by GWT WebGL backend");
+		throw new GdxRuntimeException("compressed textures not supported by WebGL backend.");
 	}
 
 	@Override
@@ -383,8 +385,8 @@ public class TeaVMGL20 implements GL20 {
 
 	@Override
 	public void glDrawElements (final int mode, final int count, final int type, final Buffer indices) {
-		gl.drawElements(mode, count, type, indices.position()); // FIXME this is assuming WebGL supports client side
-																// buffers...
+		gl.drawElements(mode, count, type, indices.position());
+		// FIXME This is assuming WebGL supports client side buffers...
 	}
 
 	@Override
@@ -449,7 +451,7 @@ public class TeaVMGL20 implements GL20 {
 			|| pname == GL20.GL_STENCIL_WRITEMASK || pname == GL20.GL_SUBPIXEL_BITS || pname == GL20.GL_UNPACK_ALIGNMENT) {
 			params.put(0, gl.getParameteri(pname));
 		} else {
-			throw new GdxRuntimeException("glGetFloat not supported by GWT WebGL backend");
+			throw new GdxRuntimeException("glGetFloat not supported by WebGL backend.");
 		}
 	}
 
@@ -836,8 +838,7 @@ public class TeaVMGL20 implements GL20 {
 
 	@Override
 	public void glGetAttachedShaders (final int program, final int maxcount, final Buffer count, final IntBuffer shaders) {
-		// FIXME
-		throw new GdxRuntimeException("not implemented");
+		throw new GdxRuntimeException("glGetAttachedShaders not supported by WebGL backend.");
 	}
 
 	@Override
@@ -848,13 +849,12 @@ public class TeaVMGL20 implements GL20 {
 
 	@Override
 	public void glGetBooleanv (final int pname, final Buffer params) {
-		throw new GdxRuntimeException("glGetBoolean not supported by GWT WebGL backend");
+		throw new GdxRuntimeException("glGetBoolean not supported by WebGL backend.");
 	}
 
 	@Override
 	public void glGetBufferParameteriv (final int target, final int pname, final IntBuffer params) {
-		// FIXME
-		throw new GdxRuntimeException("not implemented");
+		throw new GdxRuntimeException("glGetBufferParameteriv not supported by WebGL backend.");
 	}
 
 	@Override
@@ -863,15 +863,14 @@ public class TeaVMGL20 implements GL20 {
 			|| pname == GL20.GL_POLYGON_OFFSET_UNITS || pname == GL20.GL_SAMPLE_COVERAGE_VALUE) {
 			params.put(0, gl.getParameterf(pname));
 		} else {
-			throw new GdxRuntimeException("glGetFloat not supported by GWT WebGL backend");
+			throw new GdxRuntimeException("glGetFloat not supported by WebGL backend.");
 		}
 	}
 
 	@Override
 	public void glGetFramebufferAttachmentParameteriv (final int target, final int attachment, final int pname,
 		final IntBuffer params) {
-		// FIXME
-		throw new GdxRuntimeException("not implemented");
+		throw new GdxRuntimeException("glGetFramebufferAttachmentParameteriv not supported by WebGL backend.");
 	}
 
 	@Override
@@ -891,8 +890,7 @@ public class TeaVMGL20 implements GL20 {
 
 	@Override
 	public void glGetRenderbufferParameteriv (final int target, final int pname, final IntBuffer params) {
-		// FIXME
-		throw new GdxRuntimeException("not implemented");
+		throw new GdxRuntimeException("glGetRenderbufferParameteriv not supported by WebGL backend.");
 	}
 
 	@Override
@@ -914,29 +912,27 @@ public class TeaVMGL20 implements GL20 {
 	@Override
 	public void glGetShaderPrecisionFormat (final int shadertype, final int precisiontype, final IntBuffer range,
 		final IntBuffer precision) {
-		throw new GdxRuntimeException("glGetShaderPrecisionFormat not supported by GWT WebGL backend");
+		throw new GdxRuntimeException("glGetShaderPrecisionFormat not supported by WebGL backend.");
 	}
 
 	@Override
 	public void glGetTexParameterfv (final int target, final int pname, final FloatBuffer params) {
-		throw new GdxRuntimeException("glGetTexParameter not supported by GWT WebGL backend");
+		throw new GdxRuntimeException("glGetTexParameter not supported by WebGL backend.");
 	}
 
 	@Override
 	public void glGetTexParameteriv (final int target, final int pname, final IntBuffer params) {
-		throw new GdxRuntimeException("glGetTexParameter not supported by GWT WebGL backend");
+		throw new GdxRuntimeException("glGetTexParameter not supported by WebGL backend.");
 	}
 
 	@Override
 	public void glGetUniformfv (final int program, final int location, final FloatBuffer params) {
-		// FIXME
-		throw new GdxRuntimeException("not implemented");
+		throw new GdxRuntimeException("glGetUniformfv not supported by WebGL backend.");
 	}
 
 	@Override
 	public void glGetUniformiv (final int program, final int location, final IntBuffer params) {
-		// FIXME
-		throw new GdxRuntimeException("not implemented");
+		throw new GdxRuntimeException("glGetUniformiv not supported by WebGL backend.");
 	}
 
 	@Override
@@ -947,19 +943,17 @@ public class TeaVMGL20 implements GL20 {
 
 	@Override
 	public void glGetVertexAttribfv (final int index, final int pname, final FloatBuffer params) {
-		// FIXME
-		throw new GdxRuntimeException("not implemented");
+		throw new GdxRuntimeException("glGetVertexAttribfv not supported by WebGL backend.");
 	}
 
 	@Override
 	public void glGetVertexAttribiv (final int index, final int pname, final IntBuffer params) {
-		// FIXME
-		throw new GdxRuntimeException("not implemented");
+		throw new GdxRuntimeException("glGetVertexAttribiv not supported by WebGL backend.");
 	}
 
 	@Override
 	public void glGetVertexAttribPointerv (final int index, final int pname, final Buffer pointer) {
-		throw new GdxRuntimeException("glGetVertexAttribPointer not supported by GWT WebGL backend");
+		throw new GdxRuntimeException("glGetVertexAttribPointer not supported by WebGL backend.");
 	}
 
 	@Override
@@ -1020,7 +1014,7 @@ public class TeaVMGL20 implements GL20 {
 	@Override
 	public void glShaderBinary (final int n, final IntBuffer shaders, final int binaryformat, final Buffer binary,
 		final int length) {
-		throw new GdxRuntimeException("glShaderBinary not supported by GWT WebGL backend");
+		throw new GdxRuntimeException("glShaderBinary not supported by WebGL backend.");
 	}
 
 	@Override
