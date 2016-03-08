@@ -14,6 +14,7 @@ import org.teavm.jso.JSBody;
 import org.teavm.jso.browser.TimerHandler;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
+import org.teavm.jso.dom.html.HTMLDocument;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
@@ -57,7 +58,7 @@ public class TeaVMApplication implements Application {
 	}
 
 	private void startGdx () {
-		canvas = config.getCanvas();
+		canvas = (HTMLCanvasElement)HTMLDocument.current().getElementById(config.getCanvasId());
 		graphics = new TeaVMGraphics(canvas, config);
 		files = new TeaVMFiles();
 		audio = new TeaVMAudio();

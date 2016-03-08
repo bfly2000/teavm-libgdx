@@ -265,4 +265,28 @@ public class TeaVMGraphics implements Graphics {
 	@Override
 	public void setSystemCursor (final SystemCursor systemCursor) {
 	}
+
+	/** Allows to support orientation lock during fullscreen mode.
+	 * @author MJ */
+	public static interface OrientationLockType {
+		/** @return actual name of the orientation. */
+		String getName ();
+	}
+
+	/** Enum values from http://www.w3.org/TR/screen-orientation. Filtered based on what the browsers actually support. */
+	public static enum CommonOrientationLockType implements OrientationLockType { // Based on GWT backend.
+		LANDSCAPE("landscape"), PORTRAIT("portrait"), PORTRAIT_PRIMARY("portrait-primary"), PORTRAIT_SECONDARY(
+			"portrait-secondary"), LANDSCAPE_PRIMARY("landscape-primary"), LANDSCAPE_SECONDARY("landscape-secondary");
+
+		private final String name;
+
+		private CommonOrientationLockType (final String name) {
+			this.name = name;
+		}
+
+		@Override
+		public String getName () {
+			return name;
+		}
+	}
 }

@@ -33,7 +33,7 @@ public class TeaVMRenderer implements Renderer {
 
 	/** Ensures {@code requestAnimationFrame} and {@code cancelAnimationFrame} are available.
 	 * @author Erik Moller, Paul Irish and Tino Zijdel */
-	@JSBody(params = {}, script = "(function(){for(var n=0,e=['ms','moz','webkit','o'],i=0;i<e.length&&!window.requestAnimationFrame;++i)window.requestAnimationFrame=window[e[i]+'RequestAnimationFrame'],window.cancelAnimationFrame=window[e[i]+'CancelAnimationFrame']||window[e[i]+'CancelRequestAnimationFrame'];window.requestAnimationFrame||(window.requestAnimationFrame=function(e,i){var a=(new Date).getTime(),o=Math.max(0,16-(a-n)),t=window.setTimeout(function(){e(a+o)},o);return n=a+o,t},window.cancelAnimationFrame=function(n){clearTimeout(n)})})();")
+	@JSBody(params = {}, script = "(function(){var lastTime=0;var vendors=['ms','moz','webkit','o'];for(var x=0;x<vendors.length&&!window.requestAnimationFrame;++x) {window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']||window[vendors[x]+'CancelRequestAnimationFrame'];}if(!window.requestAnimationFrame)window.requestAnimationFrame=function(callback,element){var currTime=Date.now();var timeToCall=Math.max(0,16-(currTime-lastTime));var id=window.setTimeout(function(){callback(currTime + timeToCall);},timeToCall);lastTime=currTime+timeToCall;return id;};if(!window.cancelAnimationFrame)window.cancelAnimationFrame=function(id){clearTimeout(id);};}());")
 	private static native void addAnimationPolyfill ();
 
 	@Override
