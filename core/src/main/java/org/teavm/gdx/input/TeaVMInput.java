@@ -1,6 +1,8 @@
 
 package org.teavm.gdx.input;
 
+import org.teavm.gdx.graphics.resizing.ResizeListener;
+import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.Event;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.events.KeyboardEvent;
@@ -336,6 +338,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
 	 * touch.getRelativeY(target)); }
 	 */
 	private void hookEvents () {
+		Window.current().addEventListener("resize", new ResizeListener(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
 		final HTMLDocument document = canvas.getOwnerDocument();
 		canvas.addEventListener("mousedown", this, true);
 		document.addEventListener("mousedown", this, true);
