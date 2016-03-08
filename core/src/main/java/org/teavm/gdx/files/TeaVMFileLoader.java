@@ -81,7 +81,7 @@ public class TeaVMFileLoader {
 	private static void loadDescription (final Queue<Task> tasks) {
 		@SuppressWarnings("unchecked")
 		final JSArrayReader<FileDescriptor> rootFiles = (JSArrayReader<FileDescriptor>)JSON.parse(xhr.getResponseText());
-		initEntry(TeaVMFileHandle.root, rootFiles, "assets", tasks);
+		initEntry(TeaVMFileHandle.ROOT, rootFiles, "assets", tasks);
 	}
 
 	private static void initEntry (final FSEntry parent, final JSArrayReader<FileDescriptor> descList, final String fullPath,

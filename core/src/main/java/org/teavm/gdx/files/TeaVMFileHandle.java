@@ -16,9 +16,6 @@
 
 package org.teavm.gdx.files;
 
-import com.badlogic.gdx.Files.FileType;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -29,96 +26,44 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.teavm.jso.dom.html.HTMLImageElement;
 
-/** @author Alexey Andreev */
-public class TeaVMFileHandle extends FileHandle {
-	public static final FSEntry root = new FSEntry();
-	private final String file;
-	private final FileType type;
+import com.badlogic.gdx.Files.FileType;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
-	public static class FSEntry {
-		public final Map<String, FSEntry> childEntries = new HashMap<>();
-		public byte[] data;
-		public long lastModified;
-		public boolean directory;
-		public HTMLImageElement imageElem;
+/** Default implementation of {@link FileHandle} for TeaVM application. Does not support any modifying operations (write, copy,
+ * delete).
+ * @author Alexey Andreev
+ * @author MJ */
+public class TeaVMFileHandle extends AbstractFileHandle {
+	public static final FSEntry ROOT = new FSEntry();
+
+	public TeaVMFileHandle (final String path) {
+		this(path, FileType.Internal);
 	}
 
-	public TeaVMFileHandle (String fileName, FileType type) {
+	public TeaVMFileHandle (final String fileName, final FileType type) {
+		super(fileName, type);
 		if (type != FileType.Internal && type != FileType.Classpath) {
-			throw new GdxRuntimeException("FileType '" + type + "' Not supported in GWT backend");
+			throw new GdxRuntimeException("FileType '" + type + "' not supported by TeaVM backend.");
 		}
-		this.file = fixSlashes(fileName);
-		this.type = type;
-	}
-
-	public TeaVMFileHandle (String path) {
-		this.type = FileType.Internal;
-		this.file = fixSlashes(path);
-	}
-
-	@Override
-	public String path () {
-		return file;
-	}
-
-	@Override
-	public String name () {
-		int index = file.lastIndexOf('/');
-		if (index < 0) {
-			return file;
-		}
-		return file.substring(index + 1);
-	}
-
-	@Override
-	public String extension () {
-		String name = name();
-		int dotIndex = name.lastIndexOf('.');
-		if (dotIndex == -1) {
-			return "";
-		}
-		return name.substring(dotIndex + 1);
-	}
-
-	@Override
-	public String nameWithoutExtension () {
-		String name = name();
-		int dotIndex = name.lastIndexOf('.');
-		if (dotIndex == -1) {
-			return name;
-		}
-		return name.substring(0, dotIndex);
-	}
-
-	@Override
-	public String pathWithoutExtension () {
-		String path = file;
-		int dotIndex = path.lastIndexOf('.');
-		if (dotIndex == -1) {
-			return path;
-		}
-		return path.substring(0, dotIndex);
-	}
-
-	@Override
-	public FileType type () {
-		return type;
 	}
 
 	@Override
 	public InputStream read () {
-		FSEntry entry = entry();
+		final FSEntry entry = entry();
 		if (entry == null || entry.data == null) {
-			throw new GdxRuntimeException(file + " does not exist");
+			throwFileDoesNotExistError();
 		}
 		return new ByteArrayInputStream(entry.data);
 	}
 
+	/** @return {@link FSEntry} for the selected file. */
 	public FSEntry entry () {
-		FSEntry entry = root;
-		for (String part : split()) {
+		FSEntry entry = ROOT;
+		for (final String part : split()) {
 			entry = entry.childEntries.get(part);
 			if (entry == null) {
 			break;
@@ -127,11 +72,12 @@ public class TeaVMFileHandle extends FileHandle {
 		return entry;
 	}
 
-	private String[] split () {
-		List<String> result = new ArrayList<>();
+	protected String[] split () {
+		final String file = path();
+		final List<String> result = new ArrayList<>();
 		int index = 0;
 		while (index < file.length()) {
-			int next = file.indexOf('/', index);
+			final int next = file.indexOf('/', index);
 			if (next == -1) {
 			break;
 			}
@@ -142,8 +88,8 @@ public class TeaVMFileHandle extends FileHandle {
 		return result.toArray(new String[result.size()]);
 	}
 
-	private void addPart (int index, int next, List<String> result) {
-		String part = file.substring(index, next);
+	private void addPart (final int index, final int next, final List<String> result) {
+		final String part = path().substring(index, next);
 		if (!part.isEmpty() && !part.equals(".")) {
 			if (part.equals("..")) {
 			result.remove(result.size() - 1);
@@ -154,7 +100,7 @@ public class TeaVMFileHandle extends FileHandle {
 	}
 
 	@Override
-	public BufferedInputStream read (int bufferSize) {
+	public BufferedInputStream read (final int bufferSize) {
 		return new BufferedInputStream(read(), bufferSize);
 	}
 
@@ -170,18 +116,18 @@ public class TeaVMFileHandle extends FileHandle {
 
 	@Override
 	public byte[] readBytes () {
-		FSEntry entry = entry();
+		final FSEntry entry = entry();
 		if (entry == null || entry.data == null) {
-			throw new GdxRuntimeException("File does not exist: " + file);
+			throwFileDoesNotExistError();
 		}
 		return Arrays.copyOf(entry.data, entry.data.length);
 	}
 
 	@Override
-	public int readBytes (byte[] bytes, int offset, int size) {
-		FSEntry entry = entry();
+	public int readBytes (final byte[] bytes, final int offset, int size) {
+		final FSEntry entry = entry();
 		if (entry == null || entry.data == null) {
-			throw new GdxRuntimeException("File does not exist: " + file);
+			throwFileDoesNotExistError();
 		}
 		size = Math.min(size, entry.data.length);
 		System.arraycopy(entry.data, 0, bytes, offset, size);
@@ -190,29 +136,29 @@ public class TeaVMFileHandle extends FileHandle {
 
 	@Override
 	public FileHandle[] list () {
-		FSEntry entry = entry();
+		final FSEntry entry = entry();
 		if (entry == null) {
-			throw new GdxRuntimeException("File does not exist: " + file);
+			throwFileDoesNotExistError();
 		}
-		FileHandle[] result = new FileHandle[entry.childEntries.size()];
+		final FileHandle[] result = new FileHandle[entry.childEntries.size()];
 		int index = 0;
-		for (String childName : entry.childEntries.keySet()) {
-			result[index++] = new TeaVMFileHandle(file + "/" + childName, type);
+		for (final String childName : entry.childEntries.keySet()) {
+			result[index++] = new TeaVMFileHandle(path() + "/" + childName, type);
 		}
 		return result;
 	}
 
 	@Override
-	public FileHandle[] list (String suffix) {
-		FSEntry entry = entry();
+	public FileHandle[] list (final String suffix) {
+		final FSEntry entry = entry();
 		if (entry == null) {
-			throw new GdxRuntimeException("File does not exist: " + file);
+			throwFileDoesNotExistError();
 		}
-		FileHandle[] result = new FileHandle[entry.childEntries.size()];
+		final FileHandle[] result = new FileHandle[entry.childEntries.size()];
 		int index = 0;
-		for (String childName : entry.childEntries.keySet()) {
+		for (final String childName : entry.childEntries.keySet()) {
 			if (childName.endsWith(suffix)) {
-			result[index++] = new TeaVMFileHandle(file + "/" + childName, type);
+			result[index++] = new TeaVMFileHandle(path() + "/" + childName, type);
 			}
 		}
 		return index == result.length ? result : Arrays.copyOf(result, index);
@@ -220,24 +166,23 @@ public class TeaVMFileHandle extends FileHandle {
 
 	@Override
 	public boolean isDirectory () {
-		FSEntry entry = entry();
+		final FSEntry entry = entry();
 		return entry != null && entry.data == null;
 	}
 
 	@Override
-	public FileHandle child (String name) {
-		return new TeaVMFileHandle(file + "/" + fixSlashes(name), type);
+	public FileHandle child (final String name) {
+		return new TeaVMFileHandle(getChildPath(name), type);
 	}
 
 	@Override
 	public FileHandle parent () {
-		int index = file.lastIndexOf('/', file.endsWith("/") ? file.length() - 1 : file.length());
-		return index > 1 ? new TeaVMFileHandle(file.substring(0, index), type) : null;
+		return new TeaVMFileHandle(getParentPath(), type);
 	}
 
 	@Override
-	public FileHandle sibling (String name) {
-		return parent().child(fixSlashes(name));
+	public FileHandle sibling (final String name) {
+		return new TeaVMFileHandle(getSiblingPath(name), type);
 	}
 
 	@Override
@@ -247,26 +192,25 @@ public class TeaVMFileHandle extends FileHandle {
 
 	@Override
 	public long length () {
-		FSEntry entry = entry();
+		final FSEntry entry = entry();
 		return entry != null && entry.data != null ? entry.data.length : null;
 	}
 
 	@Override
 	public long lastModified () {
-		FSEntry entry = entry();
+		final FSEntry entry = entry();
 		return entry != null ? entry.lastModified : null;
 	}
 
-	@Override
-	public String toString () {
-		return file;
+	protected void throwFileDoesNotExistError () {
+		throw new GdxRuntimeException(path() + " does not exist.");
 	}
 
-	private static String fixSlashes (String path) {
-		path = path.replace('\\', '/');
-		if (path.endsWith("/")) {
-			path = path.substring(0, path.length() - 1);
-		}
-		return path;
+	public static class FSEntry {
+		public final Map<String, FSEntry> childEntries = new HashMap<>();
+		public byte[] data;
+		public long lastModified;
+		public boolean directory;
+		public HTMLImageElement imageElem;
 	}
 }
