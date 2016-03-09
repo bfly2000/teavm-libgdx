@@ -302,7 +302,8 @@ public class TeaVMGraphics implements Graphics {
 		return false;
 	}
 
-	/** Attempts to enter fullscreen mode. Returns true if succeeded. */
+	/** Attempts to enter fullscreen mode.
+	 * @return true if succeeded. */
 	public boolean enterFullscreen () {
 		if (isFullscreenModeSupported()) {
 			oldWidth = canvas.getWidth();

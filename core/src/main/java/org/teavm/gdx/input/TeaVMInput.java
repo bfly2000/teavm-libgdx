@@ -249,18 +249,22 @@ public class TeaVMInput implements ResettableInput, EventListener<Event> {
 	@JSBody(params = {}, script = "return navigator.userAgent.toLowerCase().indexOf('firefox')!=-1?'DOMMouseScroll':'mousewheel';")
 	protected static native String getMouseWheelEvent ();
 
-	/** Kindly borrowed from PlayN. **/
-	protected int getRelativeX (final MouseEvent e, final HTMLCanvasElement target) {
-		final float xScaleRatio = target.getWidth() * 1f / target.getClientWidth();
-		return Math.round(xScaleRatio
-			* (e.getClientX() - target.getAbsoluteLeft() + target.getScrollLeft() + target.getOwnerDocument().getScrollLeft()));
+	// Kindly borrowed from PlayN.
+	/** @param event native event.
+	 * @return relative X. */
+	protected int getRelativeX (final MouseEvent event) {
+		final float xScaleRatio = canvas.getWidth() * 1f / canvas.getClientWidth();
+		return Math.round(xScaleRatio * (event.getClientX() - canvas.getAbsoluteLeft() + canvas.getScrollLeft()
+			+ canvas.getOwnerDocument().getScrollLeft()));
 	}
 
-	/** Kindly borrowed from PlayN. **/
-	protected int getRelativeY (final MouseEvent e, final HTMLCanvasElement target) {
-		final float yScaleRatio = target.getHeight() * 1f / target.getClientHeight();
+	/// Kindly borrowed from PlayN.
+	/** @param event native event.
+	 * @return relative Y. */
+	protected int getRelativeY (final MouseEvent event) {
+		final float yScaleRatio = canvas.getHeight() * 1f / canvas.getClientHeight();
 		return Math.round(yScaleRatio
-			* (e.getClientY() - target.getAbsoluteTop() + target.getScrollTop() + target.getOwnerDocument().getScrollTop()));
+			* (event.getClientY() - canvas.getAbsoluteTop() + canvas.getScrollTop() + canvas.getOwnerDocument().getScrollTop()));
 	}
 
 	private static int getButton (final int button) {
@@ -280,8 +284,8 @@ public class TeaVMInput implements ResettableInput, EventListener<Event> {
 		if (e.getType().equals("mousedown")) {
 			final MouseEvent mouseEvent = (MouseEvent)e;
 			if (e.getTarget() != canvas || touched[0]) {
-			final float mouseX = getRelativeX(mouseEvent, canvas);
-			final float mouseY = getRelativeY(mouseEvent, canvas);
+			final float mouseX = getRelativeX(mouseEvent);
+			final float mouseY = getRelativeY(mouseEvent);
 			if (mouseX < 0 || mouseX > Gdx.graphics.getWidth() || mouseY < 0 || mouseY > Gdx.graphics.getHeight()) {
 				hasFocus = false;
 			}
@@ -297,8 +301,8 @@ public class TeaVMInput implements ResettableInput, EventListener<Event> {
 			touchX[0] += getMovementX(e);
 			touchY[0] += getMovementY(e);
 			} else {
-			touchX[0] = getRelativeX(mouseEvent, canvas);
-			touchY[0] = getRelativeY(mouseEvent, canvas);
+			touchX[0] = getRelativeX(mouseEvent);
+			touchY[0] = getRelativeY(mouseEvent);
 			}
 			if (processor != null) {
 			processor.touchDown(touchX[0], touchY[0], 0, getButton(mouseEvent.getButton()));
@@ -313,10 +317,10 @@ public class TeaVMInput implements ResettableInput, EventListener<Event> {
 			touchX[0] += getMovementX(e);
 			touchY[0] += getMovementY(e);
 			} else {
-			deltaX[0] = getRelativeX(mouseEvent, canvas) - touchX[0];
-			deltaY[0] = getRelativeY(mouseEvent, canvas) - touchY[0];
-			touchX[0] = getRelativeX(mouseEvent, canvas);
-			touchY[0] = getRelativeY(mouseEvent, canvas);
+			deltaX[0] = getRelativeX(mouseEvent) - touchX[0];
+			deltaY[0] = getRelativeY(mouseEvent) - touchY[0];
+			touchX[0] = getRelativeX(mouseEvent);
+			touchY[0] = getRelativeY(mouseEvent);
 			}
 			if (processor != null) {
 			if (touched[0]) {
@@ -340,10 +344,10 @@ public class TeaVMInput implements ResettableInput, EventListener<Event> {
 			touchX[0] += getMovementX(e);
 			touchY[0] += getMovementY(e);
 			} else {
-			deltaX[0] = getRelativeX(mouseEvent, canvas) - touchX[0];
-			deltaY[0] = getRelativeY(mouseEvent, canvas) - touchY[0];
-			touchX[0] = getRelativeX(mouseEvent, canvas);
-			touchY[0] = getRelativeY(mouseEvent, canvas);
+			deltaX[0] = getRelativeX(mouseEvent) - touchX[0];
+			deltaY[0] = getRelativeY(mouseEvent) - touchY[0];
+			touchX[0] = getRelativeX(mouseEvent);
+			touchY[0] = getRelativeY(mouseEvent);
 			}
 			touched[0] = false;
 			if (processor != null) {
