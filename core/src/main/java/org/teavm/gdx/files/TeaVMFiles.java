@@ -36,7 +36,6 @@ public class TeaVMFiles implements Files {
 
 	@Override
 	public FileHandle absolute (final String path) {
-		// TODO Absolute files could be supported - a request could be sent to the exact address passed by the user.
 		throw new GdxRuntimeException("File type not supported: " + FileType.Absolute);
 	}
 

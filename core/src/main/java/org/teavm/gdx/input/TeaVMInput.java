@@ -2,45 +2,80 @@
 package org.teavm.gdx.input;
 
 import org.teavm.gdx.TeaVMApplication;
+import org.teavm.jso.JSBody;
 import org.teavm.jso.dom.events.Event;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.events.KeyboardEvent;
 import org.teavm.jso.dom.events.MouseEvent;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
 import org.teavm.jso.dom.html.HTMLDocument;
+import org.teavm.jso.dom.html.HTMLElement;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.utils.IntSet;
 
-/** @author Alexey Andreev */
-public class TeaVMInput implements Input, EventListener<Event> {
-	static final int MAX_TOUCHES = 20;
-	boolean justTouched = false;
-// private final IntMap<Integer> touchMap = new IntMap<>(20);
+/** Handles {@link Input} events in the TeaVM application. Supports only keyboard and touch events.
+ * @author Alexey Andreev
+ * @author MJ */
+public class TeaVMInput implements ResettableInput, EventListener<Event> {
+	private static final int MAX_TOUCHES = 20;
+	private boolean justTouched = false;
 	private final boolean[] touched = new boolean[MAX_TOUCHES];
 	private final int[] touchX = new int[MAX_TOUCHES];
 	private final int[] touchY = new int[MAX_TOUCHES];
 	private final int[] deltaX = new int[MAX_TOUCHES];
 	private final int[] deltaY = new int[MAX_TOUCHES];
-	IntSet pressedButtons = new IntSet();
-	int pressedKeyCount = 0;
-	boolean[] pressedKeys = new boolean[256];
-	boolean keyJustPressed = false;
-	boolean[] justPressedKeys = new boolean[256];
-	InputProcessor processor;
-	char lastKeyCharPressed;
-	float keyRepeatTimer;
-	long currentEventTimeStamp;
-	final HTMLCanvasElement canvas;
-	boolean hasFocus = true;
+	private final IntSet pressedButtons = new IntSet();
+	private int pressedKeyCount = 0;
+	private final boolean[] pressedKeys = new boolean[256];
+	private boolean keyJustPressed = false;
+	private final boolean[] justPressedKeys = new boolean[256];
+	private char lastKeyCharPressed;
+	private float keyRepeatTimer;
+	private long currentEventTimeStamp;
+	private final HTMLCanvasElement canvas;
+	private boolean hasFocus = true;
+
+	private InputProcessor processor;
 
 	public TeaVMInput (final TeaVMApplication application) {
 		canvas = application.getCanvas();
 		hookEvents();
 	}
 
+	/** Adds event listeners to current document and canvas. */
+	protected void hookEvents () {
+		final HTMLDocument document = canvas.getOwnerDocument();
+		canvas.addEventListener("mousedown", this, true);
+		document.addEventListener("mousedown", this, true);
+		canvas.addEventListener("mouseup", this, true);
+		document.addEventListener("mouseup", this, true);
+		canvas.addEventListener("mousemove", this, true);
+		document.addEventListener("mousemove", this, true);
+		canvas.addEventListener("mousewheel", this, true);
+		document.addEventListener("keydown", this, false);
+		document.addEventListener("keyup", this, false);
+		document.addEventListener("keypress", this, false);
+
+		canvas.addEventListener("touchstart", this);
+		canvas.addEventListener("touchmove", this);
+		canvas.addEventListener("touchcancel", this);
+		canvas.addEventListener("touchend", this);
+	}
+
+	@Override
+	public void setInputProcessor (final InputProcessor processor) {
+		this.processor = processor;
+	}
+
+	@Override
+	public InputProcessor getInputProcessor () {
+		return processor;
+	}
+
+	@Override
 	public void reset () {
 		justTouched = false;
 		if (keyJustPressed) {
@@ -49,21 +84,6 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			justPressedKeys[i] = false;
 			}
 		}
-	}
-
-	@Override
-	public float getAccelerometerX () {
-		return 0;
-	}
-
-	@Override
-	public float getAccelerometerY () {
-		return 0;
-	}
-
-	@Override
-	public float getAccelerometerZ () {
-		return 0;
 	}
 
 	@Override
@@ -153,99 +173,14 @@ public class TeaVMInput implements Input, EventListener<Event> {
 		return justPressedKeys[key];
 	}
 
-	/*
-	 * public void getTextInput(TextInputListener listener, String title, String text, String hint) { TextInputDialogBox dialog =
-	 * new TextInputDialogBox(title, text, hint); final TextInputListener capturedListener = listener; dialog.setListener(new
-	 * TextInputDialogListener() {
-	 *
-	 * @Override public void onPositive(String text) { if (capturedListener != null) { capturedListener.input(text); } }
-	 *
-	 * @Override public void onNegative() { if (capturedListener != null) { capturedListener.canceled(); } } }); }
-	 */
-
-	@Override
-	public void setOnscreenKeyboardVisible (final boolean visible) {
-	}
-
-	@Override
-	public void vibrate (final int milliseconds) {
-	}
-
-	@Override
-	public void vibrate (final long[] pattern, final int repeat) {
-	}
-
-	@Override
-	public void cancelVibrate () {
-	}
-
-	@Override
-	public float getAzimuth () {
-		return 0;
-	}
-
-	@Override
-	public float getPitch () {
-		return 0;
-	}
-
-	@Override
-	public float getRoll () {
-		return 0;
-	}
-
-	@Override
-	public void getRotationMatrix (final float[] matrix) {
-	}
-
 	@Override
 	public long getCurrentEventTime () {
 		return currentEventTimeStamp;
 	}
 
 	@Override
-	public void setCatchBackKey (final boolean catchBack) {
-	}
-
-	@Override
-	public boolean isCatchBackKey () {
-		return false;
-	}
-
-	@Override
-	public void setCatchMenuKey (final boolean catchMenu) {
-	}
-
-	@Override
-	public void setInputProcessor (final InputProcessor processor) {
-		this.processor = processor;
-	}
-
-	@Override
-	public InputProcessor getInputProcessor () {
-		return processor;
-	}
-
-	@Override
 	public boolean isPeripheralAvailable (final Peripheral peripheral) {
-		switch (peripheral) {
-		case Gyroscope:
-		case Accelerometer:
-		case Compass:
-		case OnscreenKeyboard:
-		case Vibrator:
-			return false;
-		case HardwareKeyboard:
-			return true;
-		case MultitouchScreen:
-			return isTouchScreen();
-		}
-		return false;
-	}
-
-	@Override
-	public int getRotation () {
-		return 0;
+		return peripheral == Peripheral.HardwareKeyboard || peripheral == Peripheral.MultitouchScreen && isTouchScreen();
 	}
 
 	@Override
@@ -253,64 +188,66 @@ public class TeaVMInput implements Input, EventListener<Event> {
 		return Orientation.Landscape;
 	}
 
-	private static boolean isCursorCatchedJSNI () {
-		// TODO: implement
-		return false;
-	}
+	/** @param event native event.
+	 * @return movement X extracted from the event. */
+	@JSBody(params = "event", script = "return event.movementX||event.webkitMovementX||0;")
+	protected static native float getMovementX (final Event event);
 
-	private void setCursorCatchedJSNI (final HTMLCanvasElement element) {
-		// TODO: implement
-	}
+	/** @param event native event.
+	 * @return movement Y extracted from the event. */
+	@JSBody(params = "event", script = "return event.movementY||event.webkitMovementY||0;")
+	protected static native float getMovementY (final Event event);
 
-	private void exitCursorCatchedJSNI () {
-		// TODO: implement
-	}
+	/** @return true if browser supports touch screen. */
+	@JSBody(params = {}, script = "return (('ontouchstart' in window)||(navigator.msMaxTouchPoints > 0));")
+	public static native boolean isTouchScreen ();
 
-	private static float getMovementXJSNI (final Event event) {
-		// TODO: implement
-		return 0;
-	}
-
-	private static float getMovementYJSNI (final Event event) {
-		// TODO: implement
-		return 0;
-	}
-
-	private static boolean isTouchScreen () {
-		// TODO: implement
-		return false;
-	}
-
-	/** works only for Chrome > Version 18 with enabled Mouse Lock enable in about:flags or start Chrome with the
-	 * --enable-pointer-lock flag */
+	/** Works only for Chrome (version 18+) with enabled Mouse Lock in about:flags or when started with the --enable-pointer-lock
+	 * flag.
+	 * @param catched attempts to catch or release the cursor. */
 	@Override
 	public void setCursorCatched (final boolean catched) {
 		if (catched) {
-			setCursorCatchedJSNI(canvas);
+			catchCursor(canvas);
 		} else {
-			exitCursorCatchedJSNI();
+			releaseCursor();
 		}
 	}
 
+	/** @param element attempts to catch cursor with this element. */
+	@JSBody(params = "element", script = "if(!navigator.pointer){navigator.pointer=navigator.webkitPointer||navigator.mozPointer;}"
+		+ "if(!element.requestPointerLock){element.requestPointerLock=(function(){return element.webkitRequestPointerLock||element.mozRequestPointerLock||function(){if(navigator.pointer){navigator.pointer.lock(element);}};})();}"
+		+ "element.requestPointerLock();")
+	protected native void catchCursor (HTMLElement element);
+
+	/** Attempts to release the cursor. */
+	@JSBody(params = {}, script = "if(!document.exitPointerLock){document.exitPointerLock=(function(){return document.webkitExitPointerLock||document.mozExitPointerLock||function(){if(navigator.pointer){var elem = this;navigator.pointer.unlock();}};})();}"
+		+ "document.exitPointerLock();")
+	protected native void releaseCursor ();
+
 	@Override
 	public boolean isCursorCatched () {
-		return isCursorCatchedJSNI();
+		return isCursorCurrentlyCatched();
 	}
+
+	/** @return true if cursor is cached. False if not or if unable to determine. */
+	@JSBody(params = {}, script = "if(!navigator.pointer){navigator.pointer=navigator.webkitPointer||navigator.mozPointer;}"
+		+ "if(navigator.pointer){if(typeof (navigator.pointer.isLocked)==='boolean'){return navigator.pointer.isLocked;}else if(typeof (navigator.pointer.isLocked)==='function'){return navigator.pointer.isLocked();} else if(typeof (navigator.pointer.islocked)==='function'){return navigator.pointer.islocked();}}return false;")
+	protected native boolean isCursorCurrentlyCatched ();
 
 	@Override
 	public void setCursorPosition (final int x, final int y) {
-		// FIXME??
+		TeaVMApplication.logUnsupported("Input#setCursorPosition");
 	}
 
 	private static float getMouseWheelVelocity (final Event evt) {
-		// TODO: implement
+		// TODO Implement. Highly dependant on the browser.
 		return 0;
 	}
 
-	protected static String getMouseWheelEvent () {
-		// TODO: implement
-		return null;
-	}
+	/** @return name of the mouse wheel event. */
+	@JSBody(params = {}, script = "return navigator.userAgent.toLowerCase().indexOf('firefox')!=-1?'DOMMouseScroll':'mousewheel';")
+	protected static native String getMouseWheelEvent ();
 
 	/** Kindly borrowed from PlayN. **/
 	protected int getRelativeX (final MouseEvent e, final HTMLCanvasElement target) {
@@ -326,35 +263,6 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			* (e.getClientY() - target.getAbsoluteTop() + target.getScrollTop() + target.getOwnerDocument().getScrollTop()));
 	}
 
-	/*
-	 * protected int getRelativeX(Touch touch, HTMLCanvasElement target) { float xScaleRatio = target.getWidth() * 1f /
-	 * target.getClientWidth(); // Correct // for // canvas // CSS // scaling return Math.round(xScaleRatio *
-	 * touch.getRelativeX(target)); }
-	 *
-	 * protected int getRelativeY(Touch touch, CanvasElement target) { float yScaleRatio = target.getHeight() * 1f /
-	 * target.getClientHeight(); // Correct // for // canvas // CSS // scaling return Math.round(yScaleRatio *
-	 * touch.getRelativeY(target)); }
-	 */
-	private void hookEvents () {
-		final HTMLDocument document = canvas.getOwnerDocument();
-		canvas.addEventListener("mousedown", this, true);
-		document.addEventListener("mousedown", this, true);
-		canvas.addEventListener("mouseup", this, true);
-		document.addEventListener("mouseup", this, true);
-		canvas.addEventListener("mousemove", this, true);
-		document.addEventListener("mousemove", this, true);
-		canvas.addEventListener("mousewheel", this, true);
-		document.addEventListener("keydown", this, false);
-		document.addEventListener("keyup", this, false);
-		document.addEventListener("keypress", this, false);
-
-		canvas.addEventListener("touchstart", this);
-		canvas.addEventListener("touchmove", this);
-		canvas.addEventListener("touchcancel", this);
-		canvas.addEventListener("touchend", this);
-
-	}
-
 	private static int getButton (final int button) {
 		if (button == MouseEvent.LEFT_BUTTON) {
 			return Buttons.LEFT;
@@ -368,13 +276,13 @@ public class TeaVMInput implements Input, EventListener<Event> {
 
 	@Override
 	public void handleEvent (final Event e) {
+		// TODO Separate into multiple event handlers.
 		if (e.getType().equals("mousedown")) {
 			final MouseEvent mouseEvent = (MouseEvent)e;
 			if (e.getTarget() != canvas || touched[0]) {
 			final float mouseX = getRelativeX(mouseEvent, canvas);
 			final float mouseY = getRelativeY(mouseEvent, canvas);
 			if (mouseX < 0 || mouseX > Gdx.graphics.getWidth() || mouseY < 0 || mouseY > Gdx.graphics.getHeight()) {
-
 				hasFocus = false;
 			}
 			return;
@@ -386,8 +294,8 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			deltaX[0] = 0;
 			deltaY[0] = 0;
 			if (isCursorCatched()) {
-			touchX[0] += getMovementXJSNI(e);
-			touchY[0] += getMovementYJSNI(e);
+			touchX[0] += getMovementX(e);
+			touchY[0] += getMovementY(e);
 			} else {
 			touchX[0] = getRelativeX(mouseEvent, canvas);
 			touchY[0] = getRelativeY(mouseEvent, canvas);
@@ -400,10 +308,10 @@ public class TeaVMInput implements Input, EventListener<Event> {
 		if (e.getType().equals("mousemove")) {
 			final MouseEvent mouseEvent = (MouseEvent)e;
 			if (isCursorCatched()) {
-			deltaX[0] = (int)getMovementXJSNI(e);
-			deltaY[0] = (int)getMovementYJSNI(e);
-			touchX[0] += getMovementXJSNI(e);
-			touchY[0] += getMovementYJSNI(e);
+			deltaX[0] = (int)getMovementX(e);
+			deltaY[0] = (int)getMovementY(e);
+			touchX[0] += getMovementX(e);
+			touchY[0] += getMovementY(e);
 			} else {
 			deltaX[0] = getRelativeX(mouseEvent, canvas) - touchX[0];
 			deltaY[0] = getRelativeY(mouseEvent, canvas) - touchY[0];
@@ -427,10 +335,10 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			pressedButtons.remove(getButton(mouseEvent.getButton()));
 			touched[0] = pressedButtons.size > 0;
 			if (isCursorCatched()) {
-			deltaX[0] = (int)getMovementXJSNI(e);
-			deltaY[0] = (int)getMovementYJSNI(e);
-			touchX[0] += getMovementXJSNI(e);
-			touchY[0] += getMovementYJSNI(e);
+			deltaX[0] = (int)getMovementX(e);
+			deltaY[0] = (int)getMovementY(e);
+			touchX[0] += getMovementX(e);
+			touchY[0] += getMovementY(e);
 			} else {
 			deltaX[0] = getRelativeX(mouseEvent, canvas) - touchX[0];
 			deltaY[0] = getRelativeY(mouseEvent, canvas) - touchY[0];
@@ -450,7 +358,7 @@ public class TeaVMInput implements Input, EventListener<Event> {
 		}
 		if (e.getType().equals("keydown") && hasFocus) {
 			final KeyboardEvent keyEvent = (KeyboardEvent)e;
-			final int code = keyForCode(keyEvent.getKeyCode());
+			final int code = KeyCodes.toKey(keyEvent.getKeyCode());
 			if (code == 67) {
 			e.preventDefault();
 			if (processor != null) {
@@ -479,9 +387,8 @@ public class TeaVMInput implements Input, EventListener<Event> {
 		}
 
 		if (e.getType().equals("keyup") && hasFocus) {
-			// System.out.println("keyup");
 			final KeyboardEvent keyEvent = (KeyboardEvent)e;
-			final int code = keyForCode(keyEvent.getKeyCode());
+			final int code = KeyCodes.toKey(keyEvent.getKeyCode());
 			if (pressedKeys[code]) {
 			pressedKeyCount--;
 			pressedKeys[code] = false;
@@ -491,353 +398,117 @@ public class TeaVMInput implements Input, EventListener<Event> {
 			}
 		}
 
-		/*
-		 * if (e.getType().equals("touchstart")) { this.justTouched = true; JSArrayReader<Touch> touches = e.getChangedTouches();
-		 * for (int i = 0, j = touches.length(); i < j; i++) { Touch touch = touches.get(i); int real = touch.getIdentifier(); int
-		 * touchId; touchMap.put(real, touchId = getAvailablePointer()); touched[touchId] = true; touchX[touchId] =
-		 * getRelativeX(touch, canvas); touchY[touchId] = getRelativeY(touch, canvas); deltaX[touchId] = 0; deltaY[touchId] = 0;
-		 * if (processor != null) { processor.touchDown(touchX[touchId], touchY[touchId], touchId, Buttons.LEFT); } }
-		 * this.currentEventTimeStamp = TimeUtils.nanoTime(); e.preventDefault(); } if (e.getType().equals("touchmove")) {
-		 * JsArray<Touch> touches = e.getChangedTouches(); for (int i = 0, j = touches.length(); i < j; i++) { Touch touch =
-		 * touches.get(i); int real = touch.getIdentifier(); int touchId = touchMap.get(real); deltaX[touchId] =
-		 * getRelativeX(touch, canvas) - touchX[touchId]; deltaY[touchId] = getRelativeY(touch, canvas) - touchY[touchId];
-		 * touchX[touchId] = getRelativeX(touch, canvas); touchY[touchId] = getRelativeY(touch, canvas); if (processor != null) {
-		 * processor.touchDragged(touchX[touchId], touchY[touchId], touchId); } } this.currentEventTimeStamp =
-		 * TimeUtils.nanoTime(); e.preventDefault(); } if (e.getType().equals("touchcancel")) { JsArray<Touch> touches =
-		 * e.getChangedTouches(); for (int i = 0, j = touches.length(); i < j; i++) { Touch touch = touches.get(i); int real =
-		 * touch.getIdentifier(); int touchId = touchMap.get(real); touchMap.remove(real); touched[touchId] = false;
-		 * deltaX[touchId] = getRelativeX(touch, canvas) - touchX[touchId]; deltaY[touchId] = getRelativeY(touch, canvas) -
-		 * touchY[touchId]; touchX[touchId] = getRelativeX(touch, canvas); touchY[touchId] = getRelativeY(touch, canvas); if
-		 * (processor != null) { processor.touchUp(touchX[touchId], touchY[touchId], touchId, Buttons.LEFT); } }
-		 * this.currentEventTimeStamp = TimeUtils.nanoTime(); e.preventDefault(); } if (e.getType().equals("touchend")) {
-		 * JsArray<Touch> touches = e.getChangedTouches(); for (int i = 0, j = touches.length(); i < j; i++) { Touch touch =
-		 * touches.get(i); int real = touch.getIdentifier(); int touchId = touchMap.get(real); touchMap.remove(real);
-		 * touched[touchId] = false; deltaX[touchId] = getRelativeX(touch, canvas) - touchX[touchId]; deltaY[touchId] =
-		 * getRelativeY(touch, canvas) - touchY[touchId]; touchX[touchId] = getRelativeX(touch, canvas); touchY[touchId] =
-		 * getRelativeY(touch, canvas); if (processor != null) { processor.touchUp(touchX[touchId], touchY[touchId], touchId,
-		 * Buttons.LEFT); } } this.currentEventTimeStamp = TimeUtils.nanoTime(); e.preventDefault(); }
-		 */
-		// if(hasFocus) e.preventDefault();
+		// TODO Handle other events.
 	}
-
-// private int getAvailablePointer () {
-// for (int i = 0; i < MAX_TOUCHES; i++) {
-// if (!touchMap.containsValue(i, false)) {
-// return i;
-// }
-// }
-// return -1;
-// }
-
-	/** borrowed from PlayN, thanks guys **/
-	private static int keyForCode (final int keyCode) {
-		switch (keyCode) {
-		case KeyCodes.KEY_ALT:
-			return Keys.ALT_LEFT;
-		case KeyCodes.KEY_BACKSPACE:
-			return Keys.BACKSPACE;
-		case KeyCodes.KEY_CTRL:
-			return Keys.CONTROL_LEFT;
-		case KeyCodes.KEY_DELETE:
-			return Keys.DEL;
-		case KeyCodes.KEY_DOWN:
-			return Keys.DOWN;
-		case KeyCodes.KEY_END:
-			return Keys.END;
-		case KeyCodes.KEY_ENTER:
-			return Keys.ENTER;
-		case KeyCodes.KEY_ESCAPE:
-			return Keys.ESCAPE;
-		case KeyCodes.KEY_HOME:
-			return Keys.HOME;
-		case KeyCodes.KEY_LEFT:
-			return Keys.LEFT;
-		case KeyCodes.KEY_PAGEDOWN:
-			return Keys.PAGE_DOWN;
-		case KeyCodes.KEY_PAGEUP:
-			return Keys.PAGE_UP;
-		case KeyCodes.KEY_RIGHT:
-			return Keys.RIGHT;
-		case KeyCodes.KEY_SHIFT:
-			return Keys.SHIFT_LEFT;
-		case KeyCodes.KEY_TAB:
-			return Keys.TAB;
-		case KeyCodes.KEY_UP:
-			return Keys.UP;
-		case KEY_SPACE:
-			return Keys.SPACE;
-		case KEY_INSERT:
-			return Keys.INSERT;
-		case KEY_0:
-			return Keys.NUM_0;
-		case KEY_1:
-			return Keys.NUM_1;
-		case KEY_2:
-			return Keys.NUM_2;
-		case KEY_3:
-			return Keys.NUM_3;
-		case KEY_4:
-			return Keys.NUM_4;
-		case KEY_5:
-			return Keys.NUM_5;
-		case KEY_6:
-			return Keys.NUM_6;
-		case KEY_7:
-			return Keys.NUM_7;
-		case KEY_8:
-			return Keys.NUM_8;
-		case KEY_9:
-			return Keys.NUM_9;
-		case KEY_A:
-			return Keys.A;
-		case KEY_B:
-			return Keys.B;
-		case KEY_C:
-			return Keys.C;
-		case KEY_D:
-			return Keys.D;
-		case KEY_E:
-			return Keys.E;
-		case KEY_F:
-			return Keys.F;
-		case KEY_G:
-			return Keys.G;
-		case KEY_H:
-			return Keys.H;
-		case KEY_I:
-			return Keys.I;
-		case KEY_J:
-			return Keys.J;
-		case KEY_K:
-			return Keys.K;
-		case KEY_L:
-			return Keys.L;
-		case KEY_M:
-			return Keys.M;
-		case KEY_N:
-			return Keys.N;
-		case KEY_O:
-			return Keys.O;
-		case KEY_P:
-			return Keys.P;
-		case KEY_Q:
-			return Keys.Q;
-		case KEY_R:
-			return Keys.R;
-		case KEY_S:
-			return Keys.S;
-		case KEY_T:
-			return Keys.T;
-		case KEY_U:
-			return Keys.U;
-		case KEY_V:
-			return Keys.V;
-		case KEY_W:
-			return Keys.W;
-		case KEY_X:
-			return Keys.X;
-		case KEY_Y:
-			return Keys.Y;
-		case KEY_Z:
-			return Keys.Z;
-		case KEY_NUMPAD0:
-			return Keys.NUMPAD_0;
-		case KEY_NUMPAD1:
-			return Keys.NUMPAD_1;
-		case KEY_NUMPAD2:
-			return Keys.NUMPAD_2;
-		case KEY_NUMPAD3:
-			return Keys.NUMPAD_3;
-		case KEY_NUMPAD4:
-			return Keys.NUMPAD_4;
-		case KEY_NUMPAD5:
-			return Keys.NUMPAD_5;
-		case KEY_NUMPAD6:
-			return Keys.NUMPAD_6;
-		case KEY_NUMPAD7:
-			return Keys.NUMPAD_7;
-		case KEY_NUMPAD8:
-			return Keys.NUMPAD_8;
-		case KEY_NUMPAD9:
-			return Keys.NUMPAD_9;
-		case KEY_ADD:
-			return Keys.PLUS;
-		case KEY_SUBTRACT:
-			return Keys.MINUS;
-		case KEY_DECIMAL_POINT_KEY:
-			return Keys.PERIOD;
-		case KEY_F1:
-			return Keys.F1;
-		case KEY_F2:
-			return Keys.F2;
-		case KEY_F3:
-			return Keys.F3;
-		case KEY_F4:
-			return Keys.F4;
-		case KEY_F5:
-			return Keys.F5;
-		case KEY_F6:
-			return Keys.F6;
-		case KEY_F7:
-			return Keys.F7;
-		case KEY_F8:
-			return Keys.F8;
-		case KEY_F9:
-			return Keys.F9;
-		case KEY_F10:
-			return Keys.F10;
-		case KEY_F11:
-			return Keys.F11;
-		case KEY_F12:
-			return Keys.F12;
-		case KEY_NUM_LOCK:
-			return Keys.NUM;
-		case KEY_SELECT_KEY:
-			return Keys.BUTTON_SELECT;
-		case KEY_SEMICOLON:
-			return Keys.SEMICOLON;
-		case KEY_EQUALS:
-			return Keys.EQUALS;
-		case KEY_COMMA:
-			return Keys.COMMA;
-		case KEY_DASH:
-			return Keys.MINUS;
-		case KEY_PERIOD:
-			return Keys.PERIOD;
-		case KEY_FORWARD_SLASH:
-			return Keys.SLASH;
-		case KEY_OPEN_BRACKET:
-			return Keys.LEFT_BRACKET;
-		case KEY_BACKSLASH:
-			return Keys.BACKSLASH;
-		case KEY_CLOSE_BRACKET:
-			return Keys.RIGHT_BRACKET;
-		case KEY_SINGLE_QUOTE:
-			return Keys.APOSTROPHE;
-		case KEY_GRAVE_ACCENT:
-			return Keys.GRAVE;
-
-		// TODO Validate, make sure that are unsupported.
-		case KEY_MULTIPLY:
-			return Keys.STAR;
-		case KEY_DIVIDE:
-			return Keys.SLASH;
-		case KEY_CAPS_LOCK:
-		case KEY_PAUSE:
-		case KEY_LEFT_WINDOW_KEY:
-		case KEY_RIGHT_WINDOW_KEY:
-		case KEY_SCROLL_LOCK:
-		default:
-			return Keys.UNKNOWN;
-		}
-	}
-
-	// these are absent from KeyCodes; we know not why...
-	private static final int KEY_PAUSE = 19;
-	private static final int KEY_CAPS_LOCK = 20;
-	private static final int KEY_SPACE = 32;
-	private static final int KEY_INSERT = 45;
-	private static final int KEY_0 = 48;
-	private static final int KEY_1 = 49;
-	private static final int KEY_2 = 50;
-	private static final int KEY_3 = 51;
-	private static final int KEY_4 = 52;
-	private static final int KEY_5 = 53;
-	private static final int KEY_6 = 54;
-	private static final int KEY_7 = 55;
-	private static final int KEY_8 = 56;
-	private static final int KEY_9 = 57;
-	private static final int KEY_A = 65;
-	private static final int KEY_B = 66;
-	private static final int KEY_C = 67;
-	private static final int KEY_D = 68;
-	private static final int KEY_E = 69;
-	private static final int KEY_F = 70;
-	private static final int KEY_G = 71;
-	private static final int KEY_H = 72;
-	private static final int KEY_I = 73;
-	private static final int KEY_J = 74;
-	private static final int KEY_K = 75;
-	private static final int KEY_L = 76;
-	private static final int KEY_M = 77;
-	private static final int KEY_N = 78;
-	private static final int KEY_O = 79;
-	private static final int KEY_P = 80;
-	private static final int KEY_Q = 81;
-	private static final int KEY_R = 82;
-	private static final int KEY_S = 83;
-	private static final int KEY_T = 84;
-	private static final int KEY_U = 85;
-	private static final int KEY_V = 86;
-	private static final int KEY_W = 87;
-	private static final int KEY_X = 88;
-	private static final int KEY_Y = 89;
-	private static final int KEY_Z = 90;
-	private static final int KEY_LEFT_WINDOW_KEY = 91;
-	private static final int KEY_RIGHT_WINDOW_KEY = 92;
-	private static final int KEY_SELECT_KEY = 93;
-	private static final int KEY_NUMPAD0 = 96;
-	private static final int KEY_NUMPAD1 = 97;
-	private static final int KEY_NUMPAD2 = 98;
-	private static final int KEY_NUMPAD3 = 99;
-	private static final int KEY_NUMPAD4 = 100;
-	private static final int KEY_NUMPAD5 = 101;
-	private static final int KEY_NUMPAD6 = 102;
-	private static final int KEY_NUMPAD7 = 103;
-	private static final int KEY_NUMPAD8 = 104;
-	private static final int KEY_NUMPAD9 = 105;
-	private static final int KEY_MULTIPLY = 106;
-	private static final int KEY_ADD = 107;
-	private static final int KEY_SUBTRACT = 109;
-	private static final int KEY_DECIMAL_POINT_KEY = 110;
-	private static final int KEY_DIVIDE = 111;
-	private static final int KEY_F1 = 112;
-	private static final int KEY_F2 = 113;
-	private static final int KEY_F3 = 114;
-	private static final int KEY_F4 = 115;
-	private static final int KEY_F5 = 116;
-	private static final int KEY_F6 = 117;
-	private static final int KEY_F7 = 118;
-	private static final int KEY_F8 = 119;
-	private static final int KEY_F9 = 120;
-	private static final int KEY_F10 = 121;
-	private static final int KEY_F11 = 122;
-	private static final int KEY_F12 = 123;
-	private static final int KEY_NUM_LOCK = 144;
-	private static final int KEY_SCROLL_LOCK = 145;
-	private static final int KEY_SEMICOLON = 186;
-	private static final int KEY_EQUALS = 187;
-	private static final int KEY_COMMA = 188;
-	private static final int KEY_DASH = 189;
-	private static final int KEY_PERIOD = 190;
-	private static final int KEY_FORWARD_SLASH = 191;
-	private static final int KEY_GRAVE_ACCENT = 192;
-	private static final int KEY_OPEN_BRACKET = 219;
-	private static final int KEY_BACKSLASH = 220;
-	private static final int KEY_CLOSE_BRACKET = 221;
-	private static final int KEY_SINGLE_QUOTE = 222;
 
 	@Override
 	public void getTextInput (final TextInputListener listener, final String title, final String text, final String hint) {
 	}
 
 	@Override
+	public float getAccelerometerX () {
+		TeaVMApplication.logUnsupported("Accelerometer");
+		return 0f;
+	}
+
+	@Override
+	public float getAccelerometerY () {
+		TeaVMApplication.logUnsupported("Accelerometer");
+		return 0f;
+	}
+
+	@Override
+	public float getAccelerometerZ () {
+		TeaVMApplication.logUnsupported("Accelerometer");
+		return 0f;
+	}
+
+	@Override
 	public float getGyroscopeX () {
-		return 0;
+		TeaVMApplication.logUnsupported("Gyroscope");
+		return 0f;
 	}
 
 	@Override
 	public float getGyroscopeY () {
-		return 0;
+		TeaVMApplication.logUnsupported("Gyroscope");
+		return 0f;
 	}
 
 	@Override
 	public float getGyroscopeZ () {
+		TeaVMApplication.logUnsupported("Gyroscope");
+		return 0f;
+	}
+
+	@Override
+	public void setOnscreenKeyboardVisible (final boolean visible) {
+		TeaVMApplication.logUnsupported("On screen keyboard");
+	}
+
+	@Override
+	public void vibrate (final int milliseconds) {
+		TeaVMApplication.logUnsupported("Vibrate");
+	}
+
+	@Override
+	public void vibrate (final long[] pattern, final int repeat) {
+		TeaVMApplication.logUnsupported("Vibrate");
+	}
+
+	@Override
+	public void cancelVibrate () {
+		TeaVMApplication.logUnsupported("Vibrate");
+	}
+
+	@Override
+	public float getAzimuth () {
+		TeaVMApplication.logUnsupported("Azimuth");
+		return 0f;
+	}
+
+	@Override
+	public float getPitch () {
+		TeaVMApplication.logUnsupported("Pitch");
 		return 0;
 	}
 
 	@Override
+	public float getRoll () {
+		TeaVMApplication.logUnsupported("Roll");
+		return 0;
+	}
+
+	@Override
+	public void getRotationMatrix (final float[] matrix) {
+		TeaVMApplication.logUnsupported("Rotation");
+	}
+
+	@Override
+	public int getRotation () {
+		TeaVMApplication.logUnsupported("Rotation");
+		return 0;
+	}
+
+	@Override
+	public void setCatchBackKey (final boolean catchBack) {
+		TeaVMApplication.logUnsupported("Back key");
+	}
+
+	@Override
+	public boolean isCatchBackKey () {
+		TeaVMApplication.logUnsupported("Back key");
+		return false;
+	}
+
+	@Override
+	public void setCatchMenuKey (final boolean catchMenu) {
+		TeaVMApplication.logUnsupported("Menu key");
+	}
+
+	@Override
 	public boolean isCatchMenuKey () {
+		TeaVMApplication.logUnsupported("Menu key");
 		return false;
 	}
 }

@@ -10,6 +10,7 @@ import org.teavm.gdx.files.TeaVMFiles;
 import org.teavm.gdx.graphics.DebugTeaVMGraphics;
 import org.teavm.gdx.graphics.TeaVMGraphics;
 import org.teavm.gdx.graphics.resizing.ResizeListener;
+import org.teavm.gdx.input.ResettableInput;
 import org.teavm.gdx.input.TeaVMInput;
 import org.teavm.gdx.lifecycle.DebugTeaVMRenderer;
 import org.teavm.gdx.lifecycle.LifecycleManager;
@@ -49,21 +50,23 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 public class TeaVMApplication implements Application {
 	/** Used by TeaVM-specific classes to report informations, warnings and errors. */
 	public static final String LOGGING_TAG = "TeaVM";
+	/** If true, all usages of unsupported features will be logged. Defaults to true. */
+	public static boolean LOG_UNSUPPORTED = true;
 
 	// LibGDX core classes:
 	private final ApplicationListener applicationListener;
-	private final Net net;
+	private final ResettableInput input;
+	private final Graphics graphics;
 	private final Audio audio;
 	private final Files files;
-	private final Input input;
-	private final Graphics graphics;
+	private final Net net;
 	// Helpers:
-	private final HTMLCanvasElement canvas;
 	private final TeaVMApplicationConfiguration configuration;
 	private final PreferencesResolver preferencesResolver;
 	private final LifecycleManager lifecycleManager;
-	private final TeaVMLogger logger;
+	private final HTMLCanvasElement canvas;
 	private final Clipboard clipboard;
+	private final TeaVMLogger logger;
 	private final Renderer renderer;
 
 	/** @param applicationListener handles application events. Uses default configuration. */
@@ -82,13 +85,13 @@ public class TeaVMApplication implements Application {
 		preferencesResolver = createPreferencesResolver();
 		lifecycleManager = createLifecycleManager();
 		clipboard = createClipboard();
-		renderer = createRenderer();
 
 		net = createNet();
 		audio = createAudio();
 		files = createFiles();
-		input = createInput();
-		graphics = createGraphics();
+		input = createInput(); // Depends on: canvas.
+		renderer = createRenderer(); // Depends on: input, listener.
+		graphics = createGraphics(); // Depends on: configuration, renderer, canvas.
 	}
 
 	@Override
@@ -108,7 +111,7 @@ public class TeaVMApplication implements Application {
 	 * @see TeaVMRenderer
 	 * @see DebugTeaVMRenderer */
 	protected Renderer createRenderer () {
-		return new TeaVMRenderer(applicationListener);
+		return new TeaVMRenderer(this);
 	}
 
 	/** @return a new instance of manager that maintains {@link LifecycleListener}s and is notified about application lifecycle
@@ -156,8 +159,9 @@ public class TeaVMApplication implements Application {
 	}
 
 	/** @return a new instance of {@link Input} implementation, handling user's input.
+	 * @see ResettableInput
 	 * @see TeaVMInput */
-	protected Input createInput () {
+	protected ResettableInput createInput () {
 		return new TeaVMInput(this);
 	}
 
@@ -172,7 +176,7 @@ public class TeaVMApplication implements Application {
 	}
 
 	@Override
-	public Input getInput () {
+	public ResettableInput getInput () {
 		return input;
 	}
 
@@ -354,6 +358,8 @@ public class TeaVMApplication implements Application {
 	 *           error log with {@link #LOGGING_TAG}. Should be used to log all potentially crucial unsupported functionalities
 	 *           that do not have to throw an exception when used, but should nonetheless notify the user. */
 	public static void logUnsupported (final String unsupportedFunctionality) {
-		Gdx.app.error(LOGGING_TAG, unsupportedFunctionality + " is unsupported.");
+		if (LOG_UNSUPPORTED) {
+			Gdx.app.error(LOGGING_TAG, unsupportedFunctionality + " is unsupported.");
+		}
 	}
 }

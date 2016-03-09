@@ -2,6 +2,7 @@
 package org.teavm.gdx.lifecycle;
 
 import org.teavm.gdx.TeaVMApplication;
+import org.teavm.gdx.input.ResettableInput;
 import org.teavm.jso.JSBody;
 
 import com.badlogic.gdx.ApplicationListener;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.utils.Array;
  * @author MJ */
 public class TeaVMRenderer implements Renderer {
 	private final ApplicationListener listener;
+	private final ResettableInput input;
 	private final Array<Runnable> runnables = new Array<>();
 	private final Array<Runnable> runnablesToInvoke = new Array<>();
 	private float deltaTime;
@@ -20,9 +22,10 @@ public class TeaVMRenderer implements Renderer {
 	private int timerId;
 	private final AnimationFrame callback = this::loop;
 
-	/** @param listener will be informed of rendering events. */
-	public TeaVMRenderer (final ApplicationListener listener) {
-		this.listener = listener;
+	/** @param application will be rendered. Its {@link ApplicationListener} will be notified about lifecycle events. */
+	public TeaVMRenderer (final TeaVMApplication application) {
+		listener = application.getApplicationListener();
+		input = application.getInput();
 		addDatePolyfill();
 		addAnimationPolyfill();
 	}
@@ -79,7 +82,7 @@ public class TeaVMRenderer implements Renderer {
 		deltaTime = (now - lastRender) / 1000f;
 		lastRender = now;
 		if (runnables.size > 0) {
-			runnablesToInvoke.addAll(runnables);
+			runnablesToInvoke.addAll(runnables); // Prevents from clearing runnables scheduled by runnables.
 			runnables.clear();
 			for (final Runnable runnable : runnablesToInvoke) {
 			runnable.run();
@@ -87,6 +90,7 @@ public class TeaVMRenderer implements Renderer {
 			runnablesToInvoke.clear();
 		}
 		listener.render();
+		input.reset();
 		timerId = requestAnimationFrame(callback);
 	}
 
