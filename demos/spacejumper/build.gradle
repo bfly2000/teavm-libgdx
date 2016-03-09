@@ -1,0 +1,66 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+    dependencies {
+        // !!! THIS dependency was added:
+        classpath "org.teavm:teavm-gradle-plugin:0.4.3-SNAPSHOT"
+    }
+}
+
+allprojects {
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+    apply plugin: "java"
+
+    version = '1.0'
+    ext {
+        appName = "gdx-demo-superjumper"
+        gdxVersion = '1.9.2'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+    }
+}
+
+// !!! THIS is the new TeaVM project definition:
+project(":teavm") {
+    apply plugin: "teavm"
+    dependencies {
+        compile project(":core")
+        compile "org.teavm:gdx-backend-teavm:$gdxVersion-SNAPSHOT"
+        
+        // Temporary.
+        compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
+
+        // Optional data for TeaVM compiler - sources of libs (to create source maps):
+        teavm "org.teavm:gdx-backend-teavm:$gdxVersion-SNAPSHOT:sources"
+        teavm "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
+    }
+}
+
+project(":desktop") {
+    dependencies {
+        compile project(":core")
+        compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    }
+}
+
+project(":core") {
+    dependencies {
+        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+    }
+}
+
+tasks.eclipse.doLast {
+  delete ".project"
+  delete ".classpath"
+  delete ".settings/"
+}

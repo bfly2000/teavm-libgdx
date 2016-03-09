@@ -18,7 +18,7 @@ public class TeaVMRenderer implements Renderer {
 	private final Array<Runnable> runnables = new Array<>();
 	private final Array<Runnable> runnablesToInvoke = new Array<>();
 	private float deltaTime;
-	private long lastRender;
+	private double lastRender;
 	private int timerId;
 	private final AnimationFrame callback = this::loop;
 
@@ -63,8 +63,8 @@ public class TeaVMRenderer implements Renderer {
 	}
 
 	/** @return current date in milliseconds. */
-	@JSBody(params = {}, script = "return Date.now()")
-	protected static native long now ();
+	@JSBody(params = {}, script = "return Date.now();")
+	protected static native double now ();
 
 	@Override
 	public void stop () {
@@ -82,8 +82,8 @@ public class TeaVMRenderer implements Renderer {
 
 	/** Main application's loop. */
 	protected void loop () {
-		final long now = now();
-		deltaTime = (now - lastRender) / 1000f;
+		final double now = now();
+		deltaTime = (float)(now - lastRender) / 1000f;
 		lastRender = now;
 		if (runnables.size > 0) {
 			runnablesToInvoke.addAll(runnables); // Prevents from clearing runnables scheduled by runnables.

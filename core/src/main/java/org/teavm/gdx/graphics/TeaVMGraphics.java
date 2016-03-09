@@ -201,7 +201,7 @@ public class TeaVMGraphics implements Graphics {
 
 	/** @return true if application can go to fullscreen mode. */
 	@JSBody(params = {}, script = "return document.fullscreenEnabled||document.webkitFullscreenEnabled||document.mozFullScreenEnabled||document.msFullscreenEnabled||false;")
-	protected native boolean isFullscreenModeSupported ();
+	protected static native boolean isFullscreenModeSupported ();
 
 	@Override
 	public Monitor getPrimaryMonitor () {
@@ -245,7 +245,7 @@ public class TeaVMGraphics implements Graphics {
 
 	/** @param newTitle will become the title of the current HTML document. */
 	@JSBody(params = "newTitle", script = "document.title=newTitle")
-	protected native void setDocumentTitle (String newTitle);
+	protected static native void setDocumentTitle (String newTitle);
 
 	@Override
 	public void setVSync (final boolean vsync) {
@@ -292,7 +292,7 @@ public class TeaVMGraphics implements Graphics {
 
 	/** @return true if application is currently in fullscreen mode. */
 	@JSBody(params = {}, script = "return document.fullscreenElement!=null||document.msFullscreenElement!=null||document.webkitFullscreenElement!=null||document.mozFullScreenElement!=null||document.webkitIsFullScreen||document.mozFullScreen||false;")
-	protected native boolean isFullscreenModeOn ();
+	protected static native boolean isFullscreenModeOn ();
 
 	@Override
 	public boolean setFullscreenMode (final DisplayMode displayMode) {
@@ -320,7 +320,7 @@ public class TeaVMGraphics implements Graphics {
 
 	/** @param element will request switching to fullscreen mode. */
 	@JSBody(params = "element", script = "if(element.requestFullscreen){element.requestFullscreen();}else if(element.webkitRequestFullScreen){element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);}else if(element.mozRequestFullScreen){element.mozRequestFullScreen();}else if(element.msRequestFullscreen){element.msRequestFullscreen();}")
-	protected native void switchToFullscreen (HTMLElement element);
+	protected static native void switchToFullscreen (HTMLElement element);
 
 	/** Will post an event which will resize the game during the next render call. Width and height have to match current
 	 * application size.
@@ -356,7 +356,7 @@ public class TeaVMGraphics implements Graphics {
 
 	/** @param orientationType name of the type of orientation to lock. */
 	@JSBody(params = "orientationType", script = "var lock=screen.lockOrientation||screen.mozLockOrientation||screen.msLockOrientation||screen.webkitLockOrientation;if(lock){lock(orientationType);}else if(screen.orientation&&screen.orientation.lock){screen.orientation.lock(orientationType);}")
-	protected native void lockOrientation (String orientationType);
+	protected static native void lockOrientation (String orientationType);
 
 	/** Attempts to unlock orientation. Should be executed during exiting from fullscreen mode. */
 	public void unlockFullscreenOrientation () {
@@ -367,7 +367,7 @@ public class TeaVMGraphics implements Graphics {
 
 	/** Attempts to unlock orientation (if set). */
 	@JSBody(params = {}, script = "var unlock=screen.unlockOrientation||screen.mozUnlockOrientation||screen.msUnlockOrientation||screen.webkitUnlockOrientation;if(unlock){unlock();}else if(screen.orientation&&screen.orientation.unlock){screen.orientation.unlock();}")
-	protected native void unlockOrientation ();
+	protected static native void unlockOrientation ();
 
 	@Override
 	public boolean setWindowedMode (final int width, final int height) {
@@ -384,7 +384,7 @@ public class TeaVMGraphics implements Graphics {
 
 	/** Attempts to exit full screen mode. Should be a no-op if application is currently in windowed mode. */
 	@JSBody(params = {}, script = "if(document.exitFullscreen)document.exitFullscreen();if(document.msExitFullscreen)document.msExitFullscreen();if(document.webkitExitFullscreen)document.webkitExitFullscreen();if(document.mozExitFullscreen)document.mozExitFullscreen();if(document.webkitCancelFullScreen)document.webkitCancelFullScreen();")
-	public native void exitFullscreen ();
+	public static native void exitFullscreen ();
 
 	@Override
 	public Cursor newCursor (final Pixmap pixmap, final int xHotspot, final int yHotspot) {

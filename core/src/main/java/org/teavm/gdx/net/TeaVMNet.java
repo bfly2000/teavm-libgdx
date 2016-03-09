@@ -66,12 +66,12 @@ public class TeaVMNet implements Net {
 	/** @param request will be modified.
 	 * @param timeOut will be set as "timeout" property. */
 	@JSBody(params = {"request", "timeOut"}, script = "request.timeout=timeOut;")
-	protected native void setTimeOut (XMLHttpRequest request, int timeOut);
+	protected static native void setTimeOut (XMLHttpRequest request, int timeOut);
 
 	/** @param request will be modified.
 	 * @param includeCredentials true to include credentials. */
 	@JSBody(params = {"request", "includeCredentials"}, script = "request.withCredentials=includeCredentials;")
-	protected native void setIncludeCredentials (XMLHttpRequest request, boolean includeCredentials);
+	protected static native void setIncludeCredentials (XMLHttpRequest request, boolean includeCredentials);
 
 	@Override
 	public void cancelHttpRequest (final HttpRequest httpRequest) {
@@ -87,7 +87,7 @@ public class TeaVMNet implements Net {
 
 	/** @param request will be aborted. */
 	@JSBody(params = "request", script = "request.abort();")
-	protected native void cancelRequest (XMLHttpRequest request);
+	protected static native void cancelRequest (XMLHttpRequest request);
 
 	@Override
 	public ServerSocket newServerSocket (final Protocol protocol, final String hostname, final int port,

@@ -1,0 +1,66 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.teavm:teavm-gradle-plugin:0.4.3-SNAPSHOT"
+    }
+}
+
+apply plugin: "teavm"
+
+mainClassName = "org.teavm.superjumper.TeaVMLauncher"
+eclipse.project.name = appName + "-teavm"
+
+sourceSets.main.java.srcDirs = [ "src/" ]
+sourceSets.main.resources.srcDirs = [ "../core/assets/", "webapp" ]
+
+// TeaVM extension allows to set up the compiler:
+teavm {
+    // True to automatically include basic TeaVM dependencies.
+    includeDependencies = true
+    // Version of automatically included TeaVM libs.
+    version = "0.4.3"
+    // Directory in the build folder with compiled TeaVM sources.
+    targetDirectory = "dist"
+    // Name of the generated JS file.
+    targetFileName = "app.js"
+    // True to minify generated JS file.
+    minifying = true
+    // True to generate TeaVM debugging info.
+    debugInformationGenerated = true
+    // True to generate source maps for debugging in browsers.
+    sourceMapsGenerated = true
+    // True to copy source files to build folder.
+    sourceFilesCopied = true
+    // True to run in incremental mode. Not advised in production mode.
+    incremental = false
+    // TeaVM cache directory in build folder.
+    cacheDirectory = "teavm-cache";
+    /* Runtime javascript inclusion:
+        NONE: don't include runtime.js.
+        MERGED: merge runtime.js into main javascript file.
+        SEPARATE: include runtime.js as separate file.
+    */
+    runtime = org.teavm.tooling.RuntimeCopyOperation.SEPARATE
+    // Map (string to string) with compiler properties.
+    // See: http://groovy-lang.org/groovy-dev-kit.html#Collections-Maps
+    properties = [
+      "teavm.libgdx.genAssetsDirectory": "build/dist/assets",
+      "teavm.libgdx.fsJsonPath": "build/dist/assets"
+    ]
+
+
+    // TeaVM internals:
+    // True to include a simple HTML page.
+    mainPageIncluded = false
+    // List of classes implementing ClassHolderTransformer interface.
+    transformers = []
+    // Map of class names to their aliases in generated JS file.
+    classAliases = [:]
+    // List of maps with method aliases properties. Each properties map
+    // should contain 5 entries -  4 string values: alias, className,
+    // methodName, descriptor and 1 list of strings: types.
+    methodAliases = []
+}

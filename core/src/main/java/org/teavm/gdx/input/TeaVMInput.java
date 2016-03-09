@@ -218,12 +218,12 @@ public class TeaVMInput implements ResettableInput, EventListener<Event> {
 	@JSBody(params = "element", script = "if(!navigator.pointer){navigator.pointer=navigator.webkitPointer||navigator.mozPointer;}"
 		+ "if(!element.requestPointerLock){element.requestPointerLock=(function(){return element.webkitRequestPointerLock||element.mozRequestPointerLock||function(){if(navigator.pointer){navigator.pointer.lock(element);}};})();}"
 		+ "element.requestPointerLock();")
-	protected native void catchCursor (HTMLElement element);
+	protected static native void catchCursor (HTMLElement element);
 
 	/** Attempts to release the cursor. */
 	@JSBody(params = {}, script = "if(!document.exitPointerLock){document.exitPointerLock=(function(){return document.webkitExitPointerLock||document.mozExitPointerLock||function(){if(navigator.pointer){var elem = this;navigator.pointer.unlock();}};})();}"
 		+ "document.exitPointerLock();")
-	protected native void releaseCursor ();
+	protected static native void releaseCursor ();
 
 	@Override
 	public boolean isCursorCatched () {
@@ -233,7 +233,7 @@ public class TeaVMInput implements ResettableInput, EventListener<Event> {
 	/** @return true if cursor is cached. False if not or if unable to determine. */
 	@JSBody(params = {}, script = "if(!navigator.pointer){navigator.pointer=navigator.webkitPointer||navigator.mozPointer;}"
 		+ "if(navigator.pointer){if(typeof (navigator.pointer.isLocked)==='boolean'){return navigator.pointer.isLocked;}else if(typeof (navigator.pointer.isLocked)==='function'){return navigator.pointer.isLocked();} else if(typeof (navigator.pointer.islocked)==='function'){return navigator.pointer.islocked();}}return false;")
-	protected native boolean isCursorCurrentlyCatched ();
+	protected static native boolean isCursorCurrentlyCatched ();
 
 	@Override
 	public void setCursorPosition (final int x, final int y) {

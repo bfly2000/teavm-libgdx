@@ -74,16 +74,16 @@ public class TeaVMClipboard implements Clipboard {
 	}
 
 	@JSBody(params = "element", script = "return element.value;")
-	private native String getValue (HTMLElement element);
+	private static native String getValue (HTMLElement element);
 
 	@JSBody(params = "element", script = "element.select();")
-	private native void select (HTMLElement element);
+	private static native void select (HTMLElement element);
 
 	@JSBody(params = {}, script = "document.execCommand('paste');")
-	private native void executePaste ();
+	private static native void executePaste ();
 
 	@JSBody(params = {}, script = "document.execCommand('copy');")
-	private native void executeCopy ();
+	private static native void executeCopy ();
 
 	/** @return true if {@link #getClipboardData()} can be used. */
 	@JSBody(params = {}, script = "return window.clipboardData;")
