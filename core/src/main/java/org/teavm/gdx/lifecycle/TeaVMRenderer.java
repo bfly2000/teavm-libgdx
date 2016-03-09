@@ -58,9 +58,13 @@ public class TeaVMRenderer implements Renderer {
 
 	@Override
 	public void start () {
-		lastRender = System.currentTimeMillis(); // TODO Does it invoke Date.now()?
+		lastRender = now();
 		timerId = requestAnimationFrame(callback);
 	}
+
+	/** @return current date in milliseconds. */
+	@JSBody(params = {}, script = "return Date.now()")
+	protected static native long now ();
 
 	@Override
 	public void stop () {
@@ -78,7 +82,7 @@ public class TeaVMRenderer implements Renderer {
 
 	/** Main application's loop. */
 	protected void loop () {
-		final long now = System.currentTimeMillis();
+		final long now = now();
 		deltaTime = (now - lastRender) / 1000f;
 		lastRender = now;
 		if (runnables.size > 0) {

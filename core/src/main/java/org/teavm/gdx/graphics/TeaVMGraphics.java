@@ -275,7 +275,7 @@ public class TeaVMGraphics implements Graphics {
 
 	@Override
 	public void setContinuousRendering (final boolean isContinuous) {
-		if (!isContinuous) { // TODO GWT does not support this, should we?
+		if (!isContinuous) {
 			TeaVMApplication.logUnsupported("Graphics#setContinuousRendering(false)");
 		}
 	}

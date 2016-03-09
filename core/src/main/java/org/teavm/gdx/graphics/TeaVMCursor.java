@@ -20,7 +20,7 @@ public class TeaVMCursor implements Cursor {
 			return;
 		}
 		validateData(pixmap, xHotspot, yHotspot);
-		css = "auto"; // TODO prepare cursor when valid CSS
+		css = "auto"; // TODO Prepare cursor CSS.
 	}
 
 	private static void validateData (final Pixmap pixmap, final int xHotspot, final int yHotspot) {
