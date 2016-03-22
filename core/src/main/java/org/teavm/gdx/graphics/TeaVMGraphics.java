@@ -7,6 +7,7 @@ import org.teavm.gdx.graphics.resizing.Resizer;
 import org.teavm.gdx.graphics.webgl.TeaVMGL20;
 import org.teavm.gdx.lifecycle.Renderer;
 import org.teavm.jso.JSBody;
+import org.teavm.jso.JSObject;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.core.JSArrayReader;
 import org.teavm.jso.core.JSString;
@@ -61,8 +62,7 @@ public class TeaVMGraphics implements Graphics {
 		renderer = application.getRenderer();
 		oldWidth = canvas.getWidth();
 		oldHeight = canvas.getHeight();
-		setWebGlAttributes();
-		context = (WebGLRenderingContext)canvas.getContext("webgl");
+		context = (WebGLRenderingContext)canvas.getContext("webgl", getWebGlAttributes());
 		context.viewport(0, 0, oldWidth, oldHeight);
 		gl20 = createGL20(context);
 		addFullscreenModeListener();
@@ -77,14 +77,16 @@ public class TeaVMGraphics implements Graphics {
 		document.addEventListener("msfullscreenchange", fullscreenListener, false);
 	}
 
-	/** Sets {@link WebGLContextAttributes} according to {@link TeaVMApplicationConfiguration}. */
-	protected void setWebGlAttributes () {
+	/** Sets {@link WebGLContextAttributes} according to {@link TeaVMApplicationConfiguration}.
+	 * @return configuration object that should be passed to {@link HTMLCanvasElement#getContext(String, JSObject)} method. */
+	protected JSObject getWebGlAttributes () {
 		final WebGLContextAttributes attributes = WebGLContextAttributes.create();
 		attributes.setAlpha(configuration.isAlphaEnabled());
 		attributes.setAntialias(configuration.isAntialiasEnabled());
 		attributes.setStencil(configuration.isStencilEnabled());
 		attributes.setPremultipliedAlpha(configuration.isPremultipliedAlpha());
 		attributes.setPreserveDrawingBuffer(configuration.isDrawingBufferPreserved());
+		return attributes;
 	}
 
 	/** @param context current WebGL rendering context obtained from the canvas.
