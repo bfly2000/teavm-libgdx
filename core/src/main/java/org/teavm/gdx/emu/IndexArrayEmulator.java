@@ -89,6 +89,21 @@ public class IndexArrayEmulator implements IndexData {
 		}
 	}
 
+	@Override
+	public void updateIndices(int targetOffset, short[] indices, int offset, int count) {
+		isDirty = true;
+		final int pos = buffer.position();
+		buffer.position(targetOffset);
+		BufferUtils.copy(indices, offset, buffer, count);
+		buffer.position(pos);
+		buffer.position(0);
+
+		if (isBound) {
+			Gdx.gl20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, buffer.limit(), buffer, usage);
+			isDirty = false;
+		}
+	}
+
 	/** <p>
 	 * Returns the underlying ShortBuffer. If you modify the buffer contents they wil be uploaded on the call to {@link #bind()}.
 	 * If you need immediate uploading use {@link #setIndices(short[], int, int)}.

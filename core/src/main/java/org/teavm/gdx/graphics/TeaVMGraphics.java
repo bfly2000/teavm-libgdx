@@ -1,6 +1,8 @@
 
 package org.teavm.gdx.graphics;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.graphics.glutils.GLVersion;
 import org.teavm.gdx.TeaVMApplication;
 import org.teavm.gdx.TeaVMApplicationConfiguration;
 import org.teavm.gdx.graphics.resizing.Resizer;
@@ -52,6 +54,7 @@ public class TeaVMGraphics implements Graphics {
 	// Cache:
 	private final Monitor monitor = new TeaVMMonitor(0, 0, TeaVMApplication.LOGGING_TAG);
 	private final DisplayMode displayMode = new TeaVMDisplayMode(getScreenWidth(), getScreenHeight(), REFRESH_RATE, BPP);
+	private GLVersion glVersion;
 	private String extensions;
 	private int oldWidth;
 	private int oldHeight;
@@ -65,7 +68,15 @@ public class TeaVMGraphics implements Graphics {
 		context = (WebGLRenderingContext)canvas.getContext("webgl", getWebGlAttributes());
 		context.viewport(0, 0, oldWidth, oldHeight);
 		gl20 = createGL20(context);
+		glVersion = createGlVersion(gl20);
 		addFullscreenModeListener();
+	}
+
+	private GLVersion createGlVersion(GL20 gl20) {
+		String versionString = gl20.glGetString(GL20.GL_VERSION);
+		String vendorString = gl20.glGetString(GL20.GL_VENDOR);
+		String rendererString = gl20.glGetString(GL20.GL_RENDERER);
+		return new GLVersion(Application.ApplicationType.WebGL, versionString, vendorString, rendererString);
 	}
 
 	private void addFullscreenModeListener () {
@@ -172,6 +183,11 @@ public class TeaVMGraphics implements Graphics {
 	}
 
 	@Override
+	public GLVersion getGLVersion() {
+		return glVersion;
+	}
+
+	@Override
 	public float getPpiX () {
 		return PPI;
 	}
@@ -243,6 +259,16 @@ public class TeaVMGraphics implements Graphics {
 	@Override
 	public void setTitle (final String title) {
 		setDocumentTitle(title);
+	}
+
+	@Override
+	public void setUndecorated(boolean undecorated) {
+        TeaVMApplication.logUnsupported("Graphics#setUndecorated");
+	}
+
+	@Override
+	public void setResizable(boolean resizable) {
+        TeaVMApplication.logUnsupported("Graphics#setResizable");
 	}
 
 	/** @param newTitle will become the title of the current HTML document. */
